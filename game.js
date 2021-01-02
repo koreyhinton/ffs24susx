@@ -64,11 +64,13 @@ function dbg() {
     }
 }
 
-function inside_simple_polygons(pts, polys) {
-    // connect every point of inner rectangle (player) with
-    // outer polygons (road) vertices
-    // if one of the inner points can connect to all 4 quadrants
-    // then it is assumed to be within the road
+function similar_x(x1,x2) {
+    return Math.abs(x1-x2)<10;
+}
+function similar_y(y1,y2) {
+    return Math.abs(y1-y2)<10;
+}
+function inside_simple_polygons_fallback(pts, polys) {
     for (var i=0;i<polys.length;i++) {
         
         for (var j=0;j<pts.length;j++) {
@@ -87,6 +89,31 @@ function inside_simple_polygons(pts, polys) {
         }
     }
     return false;
+}
+function inside_simple_polygons(pts, polys) {
+    var xbuff=50;
+    var ybuff=50;
+    var pt_bools=[]
+    for (var i=0; i<pts.length;i++) {
+        for (var j=0;j<polys.length;j++) {
+            var foundW=false; var foundN=false; var foundE=false; var foundS=false;
+            for (var k=0;k<polys[j].length;k++) {
+                var ppt=pts[i]; //player point
+                var ept=polys[j][k];//edge point
+                if (ppt.x>ept.x && similar_y(ppt.y,ept.y)) foundE=true;
+                if (ppt.x<ept.x && similar_y(ppt.y,ept.y)) foundW=true;
+                if (ppt.y>ept.y && similar_x(ppt.y,ept.y)) foundN=true;
+                if (ppt.y<ept.y && similar_x(ppt.y,ept.y)) foundS=true;
+            }
+            pt_bools.push(foundW&&foundN&&foundE&&foundS)
+        }
+    }
+    for (var i=0;i<pt_bools.length;i++) { if (!pt_bools[i]) return inside_simple_polygons_fallback(pts, polys); }
+    return true;
+    // connect every point of inner rectangle (player) with
+    // outer polygons (road) vertices
+    // if one of the inner points can connect to all 4 quadrants
+    // then it is assumed to be within the road
 }
 
 function inside_rect(pts, rect) {
@@ -375,8 +402,9 @@ function gameloop() {
         var quad1=quads.quad1;var quad2=quads.quad2;var quad3=quads.quad3;
             var quad4=quads.quad4;*/
         if (lastX<0)return;
-        var dy=(lastY-y)*4
-        var dx=(lastX-x)*4
+        //dx=0;dy=0;
+        var dy=(lastY-y)*2;//*4
+        var dx=(lastX-x)*2;//*4
         setp(x+dx,y+dy)/*
         el.style.top=(y+dy)+"px"
         el.style.left=(x+dx)+"px"*/
