@@ -452,8 +452,41 @@ function goto_nearest_safe(x,y) {
     setp(map[idx].safe[min_idx].x,map[idx].safe[min_idx].y)
 }
 
-var keydown_positions=[]
+function point_at_nearest_safe(x,y) {
+    var min_dist=99999
+    var min_idx=-1
+    for (var i=0;i<map[idx].safe.length;i++) {
+        var sx=map[idx].safe[i].x;
+        var sy=map[idx].safe[i].y;
+        var cmp=Math.abs(sx-x)+Math.abs(sy-y);
+        if (cmp<min_dist) {min_dist=cmp;min_idx=i;}
+    }
+    var sx=map[idx].safe[min_idx].x;
+    var sy=map[idx].safe[min_idx].y;
+    var angles=[0,45,90,135,180,225,270,315]
+    var ang=Math.atan2(sy-y,sx-x);//*180.0/Math.PI;
+    ang *= 180 / Math.PI;
+    if (ang<0) ang = 360+ang;
+//    console.log(ang)
+    var nearest_angle=900;
+    for (var i=0;i<angles.length;i++) {
+        if (Math.abs(angles[i]-ang)<nearest_angle) nearest_angle=angles[i];
+    }
+    if (nearest_angle!=0)console.log(nearest_angle)
+    var dx = (sx>=x) ? 4:0;
+    dx = (sx<x) ? -4:dx;
+    var dy = (sy>=y) ? 4:0;
+    dy = (sy<y) ? -4:dy;
+    //var dx=0; var dy=-50;
+    setp(player.x+dx,player.y+dy,player);
+    //var el=document.getElementById("player");
+    ///angle = nearest_angle//((nearest_angle) % 360)
+//    console.log(angle)
+    ///player.src="images/player"+angle+".png";
+}
 
+var keydown_positions=[]
+speedf=1;//speed factor
 function keydown(e) {
     e = e || window.event;
     if (e.keyCode == '37') {
@@ -468,6 +501,13 @@ function keydown(e) {
         angle=((angle - 45) % 360)
         if (angle<0) angle+=360;
         el.src="images/player"+angle+".png";
+    }
+    else if (e.keyCode == '38') {
+        speedf+=1; if (speedf>3)speedf=3;
+    }
+    else if (e.keyCode == '40') {
+        speedf-=1;
+        if (speedf<0)speedf=0;
     }
     else if (debug && e.keyCode=='13') {
         var el=document.getElementById("player");
@@ -492,7 +532,6 @@ function keydown(e) {
 }
 var lastX=500;
 var lastY=530;
-var mvtry=0;
 function gameloop() {
     if (transitioning)return;
     var el=document.getElementById("player");
@@ -514,6 +553,7 @@ function gameloop() {
         dy=-1;
     }
     if (debug) {dx*=2;dy*=2}
+    dx*=speedf;dy*=speedf;
     var x=px//parseInt(el.style.left.replace("px",""));
     var y=py//parseInt(el.style.top.replace("px",""));
     var road=map[idx];
@@ -552,9 +592,10 @@ function gameloop() {
             var quad4=quads.quad4;*/
         if (lastX<0)return;
         dx=0;dy=0;
+        point_at_nearest_safe(x+dx,y+dy);
         //var dy=(lastY-y)*4;
         //var dx=(lastX-x)*4;
-        setp(x+dx,y+dy)/*
+        /*setp(x+dx,y+dy)*//*
         el.style.top=(y+dy)+"px"
         el.style.left=(x+dx)+"px"*/
         //q1 and q3 are false
