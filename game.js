@@ -452,7 +452,7 @@ function gameloop() {
         {'x':x+w,'y':y},
         {'x':x,'y':y+h},
         {'x':x+w,'y':y+h},*/
-        {'x':x+(w/2.0),'y':y+(h/2.0)}//center-point
+        {'x':x+dx+(w/2.0),'y':y+dy+(h/2.0)}//center-point
     ]
     var valid=inside_simple_polygons(pts,map[idx].road)
     if (valid) {
@@ -476,9 +476,9 @@ function gameloop() {
         var quad1=quads.quad1;var quad2=quads.quad2;var quad3=quads.quad3;
             var quad4=quads.quad4;*/
         if (lastX<0)return;
-        //dx=0;dy=0;
-        var dy=(lastY-y)*4;
-        var dx=(lastX-x)*4;
+        dx=0;dy=0;
+        //var dy=(lastY-y)*4;
+        //var dx=(lastX-x)*4;
         setp(x+dx,y+dy)/*
         el.style.top=(y+dy)+"px"
         el.style.left=(x+dx)+"px"*/
