@@ -24,7 +24,7 @@ function load_game() {
 }
 var suspects=0;
 
-function dbg() {
+window.dbg = function() {
     var els=document.getElementsByClassName("dbg")
     while (els.length>0) {els[0].remove()}//.outerHTML="";els.pop()}
     for (var i=0;i<map[idx].road.length;i++) {
@@ -253,7 +253,7 @@ function sus_animation() {
 }
 
 transitioning=false
-function setp(x,y,player) {
+window.setp=function(x,y,player) {
     px=x
     py=y
     if (player==null) {
@@ -323,8 +323,8 @@ function create_dot(x,y,color) {
     var div=document.createElement("span")
     div.style.position="absolute";
     div.style.backgroundColor=color
-    div.style.width='2px'
-    div.style.height='2px'
+    div.style.width='6px'
+    div.style.height='6px'
     div.style.left=x+"px"
     div.style.top=y+"px"
     div.className="dbg"
@@ -364,6 +364,38 @@ function draw_rect(x1,y1,x2,y2) {
     //console.log(s);
     document.getElementById("editlog").value+=s;
 }
+function draw_polys(pts) {
+    var s='/*Created by Poly editor*/'+idx+'.road.push([';
+    pts[pts.length-1].x=pts[0].x;
+    pts[pts.length-1].y=pts[0].y;
+    var lastPt=null;
+    while (pts.length>0) {
+        var pt=pts.shift();
+        create_dot(pt.x,pt.y,'orange');
+        s+="{'x':"+pt.x+",'y':"+pt.y+"},";
+        if (lastPt==null){lastPt=pt;continue;}
+        var x=lastPt.x;
+        var y=lastPt.y;
+        while (x!=pt.x || y!=pt.y) {
+            var dx=8;
+            var dy=8;
+            if (similar_x(x,pt.x)) x=pt.x
+            else if ((x+dx)<=pt.x){x+=dx}
+            else if ((x-dx)>=pt.x){x-=dx}
+            else x=pt.x
+            if (similar_y(y,pt.y))y=pt.y
+            else if ((y+dy)<=pt.y){y+=dy}
+            else if ((y-dy)>=pt.y){y-=dy}
+            else y=pt.y
+            create_dot(x,y,'orange');
+            s+="{'x':"+x+",'y':"+y+"},";
+        }
+        lastPt=pt;
+    }
+    s+=']);'
+    //console.log(s);
+    document.getElementById("editlog").value+=s;
+}
 
 window.editlog = function() {
     var div=document.createElement("textarea")
@@ -381,6 +413,7 @@ window.editlog = function() {
 
 var drawDone=false
 var drawx=0; var drawy1=0;
+var drawQ=[]
 var editEl=null
 function mousedown(e) {
     e = e || window.event;
@@ -388,13 +421,38 @@ function mousedown(e) {
     if (editEl==null) editEl=document.getElementById('edit');
     if (editEl.innerHTML != 'Edit' && e.clientY<=720) {
         if (drawDone) {
-            if (editEl.innerHTML=='Rect') { draw_rect(drawx,drawy,e.clientX,e.clientY); }
+            if (editEl.innerHTML=='Rect')
+                { draw_rect(drawx,drawy,e.clientX,e.clientY); }
         }
         drawx=e.clientX;
         drawy=e.clientY;
-        drawDone=!drawDone;
-    } else { drawDone=false; }
+        drawQ.push({'x':e.clientX,'y':e.clientY});
+        if (editEl.innerHTML=='Rect')
+            drawDone=!drawDone;
+        create_dot(e.clientX,e.clientY,'orange');
+        if (editEl.innerHTML=='Poly' && drawQ.length>1
+                                     && similar_x(e.clientX,drawQ[0].x)
+                                     && similar_y(e.clientY,drawQ[0].y)){
+            draw_polys(drawQ);
+            drawDone=!drawDone;
+        }
+
+    } else { drawDone=false; drawQ=[];}
 }
+
+function goto_nearest_safe(x,y) {
+    var min_dist=99999
+    var min_idx=-1
+    for (var i=0;i<map[idx].safe.length;i++) {
+        var sx=map[idx].safe[i].x;
+        var sy=map[idx].safe[i].y;
+        var cmp=Math.abs(sx-x)+Math.abs(sy-y);
+        if (cmp<min_dist) {min_dist=cmp;min_idx=i;}
+    }
+    setp(map[idx].safe[min_idx].x,map[idx].safe[min_idx].y)
+}
+
+var keydown_positions=[]
 
 function keydown(e) {
     e = e || window.event;
@@ -415,9 +473,26 @@ function keydown(e) {
         var el=document.getElementById("player");
         console.log(" "+el.style.left.replace("px","")+","+el.style.top.replace("px",""))
     }
+    if (keydown_positions.length>2) {
+        var stuck=(
+            keydown_positions[0].x==keydown_positions[1].x &&
+            keydown_positions[0].y==keydown_positions[1].y &&
+            keydown_positions[1].x==keydown_positions[2].x &&
+            keydown_positions[1].y==keydown_positions[2].y
+        );
+        var outofbounds=(
+            player.x<0 || player.x>1280 || player.y>720 || player.y<0
+        );
+        if(stuck || outofbounds) {
+            goto_nearest_safe(player.x, player.y)
+        }
+        keydown_positions=[]
+    }
+    keydown_positions.push({'x':player.x,'y':player.y});
 }
 var lastX=500;
 var lastY=530;
+var mvtry=0;
 function gameloop() {
     if (transitioning)return;
     var el=document.getElementById("player");

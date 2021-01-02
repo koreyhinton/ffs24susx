@@ -63,6 +63,6 @@
 </head>
 <body>
     <div id="game"></div>
-    <div><a id='edit' onclick="if(this.innerHTML=='Edit'){editlog();this.innerHTML='Rect';} else if(this.innerHTML=='Rect')this.innerHTML='Circ'; else this.innerHTML='Edit'">Edit</a></div>
+    <div><a id='edit' onclick="if(this.innerHTML=='Edit'){editlog();this.innerHTML='Poly';} else if(this.innerHTML=='Poly') {editlog();this.innerHTML='Rect'} else if(this.innerHTML=='Rect')this.innerHTML='Circ'; else this.innerHTML='Edit'">Edit</a></div>
 </body>
 </html>
