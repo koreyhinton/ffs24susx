@@ -46,3 +46,9 @@ cd images/
 
 # copy css and table into game
 #+END_SRC
+* replace foreground array
+#+BEGIN_SRC sh
+lst=$(ls images/foreground/ | cut -d '.' -f 1 | sort | uniq |  sed -z "s/\n/.png','/g" )
+js=$(echo "foregrounds=['${lst}']" |sed "s/,''//g")
+echo "$js" >foregrounds.js
+#+END_SRC

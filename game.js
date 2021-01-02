@@ -253,6 +253,21 @@ function shift_screen(from, to) {
        player.style.left=map[idx].entrances[from].x+"px";
        player.style.top=map[idx].entrances[from].y+"px";*/
        game.style.backgroundImage="url('images/background/"+map[idx].img+"')"
+
+       /**fg logic**/
+       var fgs=document.getElementsByClassName("fg");
+       while (fgs.length>0) { fgs[0].remove() }
+       if (foregrounds.includes(map[idx].img)){
+           var fgImg=document.createElement("img"); fgImg.style.zIndex=100004;
+           fgImg.style.position="absolute";
+           fgImg.className="fg";
+           fgImg.style.top="0px";
+           fgImg.style.left="0px";
+           fgImg.src="images/foreground/"+map[idx].img
+           game.appendChild(fgImg)
+       }
+       /************/
+
        if (debug) dbg()
        //console.log(map[idx].entrances[from].x+"px")
        var susFlag=map[idx].suspects.length>0;
