@@ -62,6 +62,10 @@ window.dbg = function() {
             document.getElementById("game").appendChild(div)
         }
     }
+    for (var i=0;i<Object.keys(map[idx].entrances).length;i++){
+        var key=Object.keys(map[idx].entrances)[i];
+        create_dot(map[idx].entrances[key].x,map[idx].entrances[key].y,'gray', 100);
+    }
 }
 
 function similar_x(x1,x2) {
@@ -319,14 +323,15 @@ function shift_screen(from, to) {
    },100);
 }
 
-function create_dot(x,y,color) {
+function create_dot(x,y,color,size) {
+    if (size==null)size=6;
     var div=document.createElement("span")
     div.style.position="absolute";
     div.style.backgroundColor=color
-    div.style.width='6px'
-    div.style.height='6px'
-    div.style.left=x+"px"
-    div.style.top=y+"px"
+    div.style.width=size+'px'
+    div.style.height=size+'px'
+    div.style.left=x-(size/2)+"px"
+    div.style.top=y-(size/2)+"px"
     div.className="dbg"
     div.style.zIndex=10000;
     document.getElementById("game").appendChild(div)
@@ -398,6 +403,7 @@ function draw_polys(pts) {
 }
 
 window.editlog = function() {
+    if (document.getElementById('editlog')!=null){document.getElementById('editlog').value='';return;}
     var div=document.createElement("textarea")
     div.id="editlog";
     div.style.position="absolute";
@@ -430,6 +436,9 @@ function mousedown(e) {
         if (editEl.innerHTML=='Rect')
             drawDone=!drawDone;
         create_dot(e.clientX,e.clientY,'orange');
+        if (editEl.innerHTML=='Point'){
+            document.getElementById('editlog').value += ("{'x':"+e.clientX+",'y':"+e.clientY+"},");
+        }
         if (editEl.innerHTML=='Poly' && drawQ.length>1
                                      && similar_x(e.clientX,drawQ[0].x)
                                      && similar_y(e.clientY,drawQ[0].y)){
