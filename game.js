@@ -102,14 +102,16 @@ function inside_simple_polygons(pts, polys) {
                 var ept=polys[j][k];//edge point
                 if (ppt.x>ept.x && similar_y(ppt.y,ept.y)) foundE=true;
                 if (ppt.x<ept.x && similar_y(ppt.y,ept.y)) foundW=true;
-                if (ppt.y>ept.y && similar_x(ppt.y,ept.y)) foundN=true;
-                if (ppt.y<ept.y && similar_x(ppt.y,ept.y)) foundS=true;
+                if (ppt.y>ept.y && similar_x(ppt.x,ept.x)) foundN=true;
+                if (ppt.y<ept.y && similar_x(ppt.x,ept.x)) foundS=true;
             }
-            pt_bools.push(foundW&&foundN&&foundE&&foundS)
+            if (foundW&&foundN&&foundE&&foundS) return true;
+            //pt_bools.push(foundW&&foundN&&foundE&&foundS)
         }
     }
-    for (var i=0;i<pt_bools.length;i++) { if (!pt_bools[i]) return inside_simple_polygons_fallback(pts, polys); }
-    return true;
+    return false;
+    //for (var i=0;i<pt_bools.length;i++) { if (!pt_bools[i]) return false;/*inside_simple_polygons_fallback(pts, polys);*/ }
+    //return true;
     // connect every point of inner rectangle (player) with
     // outer polygons (road) vertices
     // if one of the inner points can connect to all 4 quadrants
@@ -317,9 +319,81 @@ function shift_screen(from, to) {
    },100);
 }
 
+function create_dot(x,y,color) {
+    var div=document.createElement("span")
+    div.style.position="absolute";
+    div.style.backgroundColor=color
+    div.style.width='2px'
+    div.style.height='2px'
+    div.style.left=x+"px"
+    div.style.top=y+"px"
+    div.className="dbg"
+    div.style.zIndex=10000;
+    document.getElementById("game").appendChild(div)
+}
+
+function draw_rect(x1,y1,x2,y2) {
+    var s='/*Created by Rect editor*/'+idx+'.road.push([';
+    var xf=(x2-x1)%1+1;
+    var yf=(y2-y1)%1+1;
+    var x=x1*xf;
+    while (x<x2) {
+        create_dot(x,y2,'yellow');
+        s+="{'x':"+x+",'y':"+y2+"},";
+        x+=(5*xf);
+    }
+    x=x1;
+    while (x<x2) {
+        create_dot(x,y1,'yellow');
+        s+="{'x':"+x+",'y':"+y1+"},";
+        x+=(5*xf);
+    }
+    var y=y1*yf;
+    while (y<y2) {
+        create_dot(x1,y,'yellow');
+        s+="{'x':"+x1+",'y':"+y+"},";
+        y+=(5*yf);
+    }
+    y=y1*yf;
+    while (y<y2) {
+        create_dot(x2,y,'yellow');
+        s+="{'x':"+x2+",'y':"+y+"},";
+        y+=(5*yf);
+    }
+    s+=']);'
+    //console.log(s);
+    document.getElementById("editlog").value+=s;
+}
+
+window.editlog = function() {
+    var div=document.createElement("textarea")
+    div.id="editlog";
+    div.style.position="absolute";
+    div.style.backgroundColor='yellow';
+    div.style.width='1280px'
+    div.style.height='600px'
+    div.style.left=0+"px"
+    div.style.top="750px"
+    div.className="dbg"
+    div.style.zIndex=10000;
+    document.getElementById("game").appendChild(div)
+}
+
+var drawDone=false
+var drawx=0; var drawy1=0;
+var editEl=null
 function mousedown(e) {
     e = e || window.event;
     console.log("{'x':"+e.clientX + "," + "'y':"+e.clientY+"},")
+    if (editEl==null) editEl=document.getElementById('edit');
+    if (editEl.innerHTML != 'Edit' && e.clientY<=720) {
+        if (drawDone) {
+            if (editEl.innerHTML=='Rect') { draw_rect(drawx,drawy,e.clientX,e.clientY); }
+        }
+        drawx=e.clientX;
+        drawy=e.clientY;
+        drawDone=!drawDone;
+    } else { drawDone=false; }
 }
 
 function keydown(e) {
@@ -403,8 +477,8 @@ function gameloop() {
             var quad4=quads.quad4;*/
         if (lastX<0)return;
         //dx=0;dy=0;
-        var dy=(lastY-y)*2;//*4
-        var dx=(lastX-x)*2;//*4
+        var dy=(lastY-y)*4;
+        var dx=(lastX-x)*4;
         setp(x+dx,y+dy)/*
         el.style.top=(y+dy)+"px"
         el.style.left=(x+dx)+"px"*/
@@ -456,6 +530,7 @@ var intId=setInterval(function(){
         el.src="images/player225.png";
         el.style.position="absolute";
         setp(500,530,el)
+        //setp(800,555,el)
         /*el.style.left="500px";
         el.style.top="530px";*/
         game.appendChild(el);
