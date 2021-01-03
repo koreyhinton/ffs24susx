@@ -19,9 +19,20 @@ var angle=225;
 var px=-1  //player x, each gameloop needs position data immediately
 var py=-1
 
-function load_game() {
-    
+function draw_button(name,x,y) {
+    var img=document.createElement("img");
+    img.src="images/icons/"+name+".png";
+    img.style.opacity=0.8;
+    img.style.zIndex=1000008;
+    img.style.position='absolute';
+    img.style.left=x+'px';
+    img.style.top=y+'px';
+    img.style.width='44px';
+    img.style.height='44px';
+    img.style.border='3px solid lightyellow';
+    document.getElementById('game').appendChild(img)
 }
+
 var suspects=0;
 window.dbg_clear = function() {
     var els=document.getElementsByClassName("dbg")
@@ -692,6 +703,12 @@ var intId=setInterval(function(){
 
         document.onkeydown = keydown;
         document.onclick=mousedown;
+
+        draw_button("up",1000,600);
+        draw_button("down",1000,644);
+        draw_button("left",956,644);
+        draw_button("right",1044,644);
+
         setInterval(gameloop, 10);
         return;
     }
@@ -699,7 +716,6 @@ var intId=setInterval(function(){
     instructions=instructions.substring(1);
     //setTimeout(load_game, 2400);
 }, 32);
-
 
 
 /*END**/});
