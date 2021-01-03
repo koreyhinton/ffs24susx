@@ -5,14 +5,14 @@ var debug=false
 var dbg_cell=new URL(location.href).searchParams.get("c");
 console.log(dbg_cell)
 if (dbg_cell != null) {
-    debug=true;
+    //debug=true;
     idx=dbg_cell
 }
 
 
 var instructions="Welcome mouse detective! Are you ready for your first assignment? There is an elf hiding behind a mask that is causing all sorts of mayhem, stealing toys and stealing the holiday joy. Your assignment is to find which elf is hiding behind the mask. Use the left and right arrow controls to steer your vehicle. Starting in.......... Three.............................. Two.............................. One.............................."
 
-if (debug) instructions=""
+if (dbg_cell!=null) instructions=""
 
 
 var angle=225;
@@ -23,7 +23,10 @@ function load_game() {
     
 }
 var suspects=0;
-
+window.dbg_clear = function() {
+    var els=document.getElementsByClassName("dbg")
+    while (els.length>0) {els[0].remove()}//.outerHTML="";els.pop()}
+}
 window.dbg = function() {
     var els=document.getElementsByClassName("dbg")
     while (els.length>0) {els[0].remove()}//.outerHTML="";els.pop()}
@@ -39,7 +42,7 @@ window.dbg = function() {
                 div.style.left=obj.x+"px"
                 div.style.top=obj.y+"px"
                 div.className="dbg"
-                div.style.zIndex=10000;
+                div.style.zIndex=100005;
                 //div.style.display=""
                 document.getElementById("game").appendChild(div)
                 //console.log(window.getComputedStyle(div).left+","+window.getComputedStyle(div).top)
@@ -58,13 +61,18 @@ window.dbg = function() {
             div.style.left=obj.x+"px"
             div.style.top=obj.y+"px"
             div.className="dbg"
-            div.style.zIndex=10000;
+            div.style.zIndex=100005;
             document.getElementById("game").appendChild(div)
         }
     }
     for (var i=0;i<Object.keys(map[idx].entrances).length;i++){
         var key=Object.keys(map[idx].entrances)[i];
-        create_dot(map[idx].entrances[key].x,map[idx].entrances[key].y,'gray', 100);
+        var dot=create_dot(map[idx].entrances[key].x,map[idx].entrances[key].y,'gray', 100);
+        dot.style.opacity=0.9;
+    }
+    for (var i=0;i<map[idx].safe.length;i++){
+        var pt=map[idx].safe[i];
+        create_dot(pt.x,pt.y,'black', 7);
     }
 }
 
@@ -171,7 +179,8 @@ function sus_animation() {
     var y=(720-sush)
     var sus=document.createElement("div")
     //sus.innerHTML="<img src='images/balloon-36286__340.png'>"
-    sus.zIndex=100000
+    //sus.zIndex=100000
+    sus.style.zIndex=100006;
     sus.style.width=(susw)+"px"
     sus.style.height=(sush)+"px"
     sus.style.position="absolute"
@@ -184,12 +193,13 @@ function sus_animation() {
     hat.style.top="296px";
     hat.style.width="48px"
     hat.style.height="48px"
-    hat.zIndex=200001
+    //hat.zIndex=200001
+    hat.style.zIndex=100006;
     hat.innerHTML="<img src='images/elf"+idx+".png'>"
     sus.appendChild(hat)
     
     var balloon=document.createElement("div")
-    balloon.zIndex=200000
+    balloon.style.zIndex=100006;//.zIndex=200000
     balloon.style.position="relative"
     balloon.style.left="0px";
     balloon.style.top="0px";
@@ -201,14 +211,14 @@ function sus_animation() {
     var sus2=document.createElement("div");
     sus2.className="sus";
     //sus.innerHTML="<img src='images/balloon-36286__340.png'>"
-    sus2.zIndex=100000
+    sus2.style.zIndex=100006;//.zIndex=100000
     sus2.style.width=(susw)+"px"
     sus2.style.height=(sush)+"px"
     sus2.style.position="absolute"
     sus2.style.left=(1280-susw)+"px"
     sus2.style.top=(y)+"px"
     var balloon2=document.createElement("div")
-    balloon2.zIndex=200000
+    balloon2.style.zIndex=100006;//.zIndex=200000
     balloon2.style.position="relative"
     balloon2.style.left="0px";
     balloon2.style.top="0px";
@@ -219,7 +229,7 @@ function sus_animation() {
     hat2.style.top="296px";
     hat2.style.width="48px"
     hat2.style.height="48px"
-    hat2.zIndex=200001
+    hat2.style.zIndex=100006;//.zIndex=200001
     hat2.innerHTML="<img src='images/mask.png'>"
     sus2.appendChild(hat2)
     sus2.appendChild(balloon2)
@@ -270,6 +280,11 @@ function shift_screen(from, to) {
    transitioning=true
    var suss=document.getElementsByClassName("sus")
    for (var i=0;i<suss.length;i++){suss[i].remove()}
+   dbg_clear();
+   document.getElementById('edit').innerHTML='Edit';
+   document.getElementById('debug').innerHTML='Debug';
+   while (document.getElementsByClassName('edit').length>0){document.getElementsByClassName('edit')[0].remove()}
+   if (document.getElementById('editlog')!=null){document.getElementById('editlog').remove()}
    // shifting screens HAS to wait a bit using setTimeout,
    // this is because previous game loops will linger
    // and the player will unintentionally skip a cell,
@@ -335,6 +350,7 @@ function create_dot(x,y,color,size) {
     div.className="dbg"
     div.style.zIndex=10000;
     document.getElementById("game").appendChild(div)
+    return div;
 }
 
 function draw_rect(x1,y1,x2,y2) {
@@ -343,25 +359,25 @@ function draw_rect(x1,y1,x2,y2) {
     var yf=(y2-y1)%1+1;
     var x=x1*xf;
     while (x<x2) {
-        create_dot(x,y2,'yellow');
+        create_dot(x,y2,'yellow').className='edit';
         s+="{'x':"+x+",'y':"+y2+"},";
         x+=(5*xf);
     }
     x=x1;
     while (x<x2) {
-        create_dot(x,y1,'yellow');
+        create_dot(x,y1,'yellow').className='edit';
         s+="{'x':"+x+",'y':"+y1+"},";
         x+=(5*xf);
     }
     var y=y1*yf;
     while (y<y2) {
-        create_dot(x1,y,'yellow');
+        create_dot(x1,y,'yellow').className='edit';
         s+="{'x':"+x1+",'y':"+y+"},";
         y+=(5*yf);
     }
     y=y1*yf;
     while (y<y2) {
-        create_dot(x2,y,'yellow');
+        create_dot(x2,y,'yellow').className='edit';
         s+="{'x':"+x2+",'y':"+y+"},";
         y+=(5*yf);
     }
@@ -376,7 +392,7 @@ function draw_polys(pts) {
     var lastPt=null;
     while (pts.length>0) {
         var pt=pts.shift();
-        create_dot(pt.x,pt.y,'orange');
+        create_dot(pt.x,pt.y,'orange').className='edit';
         s+="{'x':"+pt.x+",'y':"+pt.y+"},";
         if (lastPt==null){lastPt=pt;continue;}
         var x=lastPt.x;
@@ -392,7 +408,7 @@ function draw_polys(pts) {
             else if ((y+dy)<=pt.y){y+=dy}
             else if ((y-dy)>=pt.y){y-=dy}
             else y=pt.y
-            create_dot(x,y,'orange');
+            create_dot(x,y,'orange').className='edit';
             s+="{'x':"+x+",'y':"+y+"},";
         }
         lastPt=pt;
@@ -412,7 +428,7 @@ window.editlog = function() {
     div.style.height='600px'
     div.style.left=0+"px"
     div.style.top="750px"
-    div.className="dbg"
+    div.className="editlog"
     div.style.zIndex=10000;
     document.getElementById("game").appendChild(div)
 }
@@ -435,7 +451,7 @@ function mousedown(e) {
         drawQ.push({'x':e.clientX,'y':e.clientY});
         if (editEl.innerHTML=='Rect')
             drawDone=!drawDone;
-        create_dot(e.clientX,e.clientY,'orange');
+        create_dot(e.clientX,e.clientY,'orange').className='edit';
         if (editEl.innerHTML=='Point'){
             document.getElementById('editlog').value += ("{'x':"+e.clientX+",'y':"+e.clientY+"},");
         }
@@ -518,10 +534,6 @@ function keydown(e) {
         speedf-=1;
         if (speedf<0)speedf=0;
     }
-    else if (debug && e.keyCode=='13') {
-        var el=document.getElementById("player");
-        console.log(" "+el.style.left.replace("px","")+","+el.style.top.replace("px",""))
-    }
     if (keydown_positions.length>2) {
         var stuck=(
             keydown_positions[0].x==keydown_positions[1].x &&
@@ -561,7 +573,7 @@ function gameloop() {
     } else {
         dy=-1;
     }
-    if (debug) {dx*=2;dy*=2}
+    //if (debug) {dx*=2;dy*=2}
     dx*=speedf;dy*=speedf;
     var x=px//parseInt(el.style.left.replace("px",""));
     var y=py//parseInt(el.style.top.replace("px",""));
@@ -666,6 +678,7 @@ var intId=setInterval(function(){
         sus.style.left="0px";
         sus.style.top="0px";
         sus.innerHTML="Suspects: 0"
+        sus.style.zIndex=100006;
         game.appendChild(sus);
         /**/var cell=document.createElement("div");
         cell.style.position="absolute";
@@ -675,7 +688,7 @@ var intId=setInterval(function(){
         cell.innerHTML=idx;
         game.appendChild(cell);
 
-        if (debug) dbg();
+        //if (debug) dbg();
 
         document.onkeydown = keydown;
         document.onclick=mousedown;

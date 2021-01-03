@@ -63,6 +63,13 @@
 </head>
 <body>
     <div id="game"></div>
-    <div><a id='edit' onclick="if(this.innerHTML=='Edit'){editlog();this.innerHTML='Poly';} else if(this.innerHTML=='Poly') {editlog();this.innerHTML='Rect'} else if(this.innerHTML=='Rect'){editlog();this.innerHTML='Point';} else this.innerHTML='Edit'">Edit</a></div>
+    <div>
+        <table>
+            <tr>
+                <td style='border:1px solid white;'><a id='edit' onclick="if(this.innerHTML=='Edit'){editlog();this.innerHTML='Poly';} else if(this.innerHTML=='Poly') {editlog();this.innerHTML='Rect'} else if(this.innerHTML=='Rect'){editlog();this.innerHTML='Point';} else {this.innerHTML='Edit';document.getElementById('editlog').remove();}">Edit</a></td>
+                <td style='border:1px solid white;'><a id='debug' onclick="if(this.innerHTML=='Debug'){this.innerHTML='Normal';dbg();}else{this.innerHTML='Debug';dbg_clear();}">Debug</a></td>
+            </tr>
+        </table>
+</div>
 </body>
 </html>
