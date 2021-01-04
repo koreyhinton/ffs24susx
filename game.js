@@ -548,16 +548,19 @@ function keydown(e) {
         if (speedf<0)speedf=0;
     }
     if (keydown_positions.length>2) {
-        var stuck=(
+        //if player gets stuck user can press recenter button
+        //removing stuck logic will allow player to turn around
+        //while stopped.
+        /*var stuck=(
             keydown_positions[0].x==keydown_positions[1].x &&
             keydown_positions[0].y==keydown_positions[1].y &&
             keydown_positions[1].x==keydown_positions[2].x &&
             keydown_positions[1].y==keydown_positions[2].y
-        );
+        );*/
         var outofbounds=(
             player.x<0 || player.x>1280 || player.y>720 || player.y<0
         );
-        if(stuck || outofbounds) {
+        if(/*stuck || */outofbounds) {
             goto_nearest_safe(player.x, player.y)
         }
         keydown_positions=[]
@@ -720,6 +723,16 @@ var intId=setInterval(function(){
         draw_button("down",1000,644);
         draw_button("left",956,644);
         draw_button("right",1044,644);
+
+        var recenter=document.createElement("a");
+        recenter.innerHTML="recenter";
+        recenter.onclick= function() {goto_nearest_safe(640,360);}
+        recenter.style.position="absolute";
+        recenter.style.left="1100px";
+        recenter.style.top="658px";
+        recenter.style.zIndex="1000008";
+        recenter.id="recenter";
+        game.appendChild(recenter);
 
         setInterval(gameloop, 10);
         return;
