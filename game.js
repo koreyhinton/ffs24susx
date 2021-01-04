@@ -23,7 +23,7 @@ function draw_button(name,x,y) {
     var img=document.createElement("img");
     img.src="images/icons/"+name+".png";
     img.style.opacity=0.8;
-    img.style.zIndex=1000008;
+    img.style.zIndex="1000008";
     img.style.position='absolute';
     img.style.left=x+'px';
     img.style.top=y+'px';
@@ -53,7 +53,7 @@ window.dbg = function() {
                 div.style.left=obj.x+"px"
                 div.style.top=obj.y+"px"
                 div.className="dbg"
-                div.style.zIndex=100005;
+                div.style.zIndex="100005";
                 //div.style.display=""
                 document.getElementById("game").appendChild(div)
                 //console.log(window.getComputedStyle(div).left+","+window.getComputedStyle(div).top)
@@ -72,7 +72,7 @@ window.dbg = function() {
             div.style.left=obj.x+"px"
             div.style.top=obj.y+"px"
             div.className="dbg"
-            div.style.zIndex=100005;
+            div.style.zIndex="100005";
             document.getElementById("game").appendChild(div)
         }
     }
@@ -191,7 +191,7 @@ function sus_animation() {
     var sus=document.createElement("div")
     //sus.innerHTML="<img src='images/balloon-36286__340.png'>"
     //sus.zIndex=100000
-    sus.style.zIndex=100006;
+    sus.style.zIndex="100006";
     sus.style.width=(susw)+"px"
     sus.style.height=(sush)+"px"
     sus.style.position="absolute"
@@ -205,12 +205,12 @@ function sus_animation() {
     hat.style.width="48px"
     hat.style.height="48px"
     //hat.zIndex=200001
-    hat.style.zIndex=100006;
+    hat.style.zIndex="100006";
     hat.innerHTML="<img src='images/elf"+idx+".png'>"
     sus.appendChild(hat)
     
     var balloon=document.createElement("div")
-    balloon.style.zIndex=100006;//.zIndex=200000
+    balloon.style.zIndex="100006";//.zIndex=200000
     balloon.style.position="relative"
     balloon.style.left="0px";
     balloon.style.top="0px";
@@ -222,14 +222,14 @@ function sus_animation() {
     var sus2=document.createElement("div");
     sus2.className="sus";
     //sus.innerHTML="<img src='images/balloon-36286__340.png'>"
-    sus2.style.zIndex=100006;//.zIndex=100000
+    sus2.style.zIndex="100006";//.zIndex=100000
     sus2.style.width=(susw)+"px"
     sus2.style.height=(sush)+"px"
     sus2.style.position="absolute"
     sus2.style.left=(1280-susw)+"px"
     sus2.style.top=(y)+"px"
     var balloon2=document.createElement("div")
-    balloon2.style.zIndex=100006;//.zIndex=200000
+    balloon2.style.zIndex="100006";//.zIndex=200000
     balloon2.style.position="relative"
     balloon2.style.left="0px";
     balloon2.style.top="0px";
@@ -240,7 +240,7 @@ function sus_animation() {
     hat2.style.top="296px";
     hat2.style.width="48px"
     hat2.style.height="48px"
-    hat2.style.zIndex=100006;//.zIndex=200001
+    hat2.style.zIndex="100006";//.zIndex=200001
     hat2.innerHTML="<img src='images/mask.png'>"
     sus2.appendChild(hat2)
     sus2.appendChild(balloon2)
@@ -286,6 +286,8 @@ window.setp=function(x,y,player) {
     }
     player.style.left=x+"px";
     player.style.top=y+"px";
+    speedEl.style.left=player.style.left;
+    speedEl.style.top=player.style.top;
 }
 function shift_screen(from, to) {
    transitioning=true
@@ -317,7 +319,7 @@ function shift_screen(from, to) {
        var fgs=document.getElementsByClassName("fg");
        while (fgs.length>0) { fgs[0].remove() }
        if (foregrounds.includes(map[idx].img)){
-           var fgImg=document.createElement("img"); fgImg.style.zIndex=100004;
+           var fgImg=document.createElement("img"); fgImg.style.zIndex="100004";
            fgImg.style.position="absolute";
            fgImg.className="fg";
            fgImg.style.top="0px";
@@ -359,7 +361,7 @@ function create_dot(x,y,color,size) {
     div.style.left=x-(size/2)+"px"
     div.style.top=y-(size/2)+"px"
     div.className="dbg"
-    div.style.zIndex=10000;
+    div.style.zIndex="10000";
     document.getElementById("game").appendChild(div)
     return div;
 }
@@ -440,7 +442,7 @@ window.editlog = function() {
     div.style.left=0+"px"
     div.style.top="750px"
     div.className="editlog"
-    div.style.zIndex=10000;
+    div.style.zIndex="10000";
     document.getElementById("game").appendChild(div)
 }
 
@@ -566,6 +568,9 @@ var lastX=500;
 var lastY=530;
 function gameloop() {
     if (transitioning)return;
+    if (speedEl.src != "images/speed"+speedf+".png"){
+        speedEl.src="images/speed"+speedf+".png";
+    }
     var el=document.getElementById("player");
     var dx=0; var dy=0;
     if (angle>90 && angle<270) {
@@ -677,11 +682,18 @@ var intId=setInterval(function(){
         el.id="player";
         el.src="images/player225.png";
         el.style.position="absolute";
-        setp(500,530,el)
         //setp(800,555,el)
         /*el.style.left="500px";
         el.style.top="530px";*/
         game.appendChild(el);
+
+        /*global*/speedEl=document.createElement("img");
+        speedEl.id="speed";
+        speedEl.src="images/speed1.png";
+        speedEl.style.position="absolute";
+        speedEl.style.zIndex="1001";
+        game.appendChild(speedEl);
+        setp(500,530,el);
 
         /**/var sus=document.createElement("div");
         sus.style.position="absolute";
@@ -689,7 +701,7 @@ var intId=setInterval(function(){
         sus.style.left="0px";
         sus.style.top="0px";
         sus.innerHTML="Suspects: 0"
-        sus.style.zIndex=100006;
+        sus.style.zIndex="100006";
         game.appendChild(sus);
         /**/var cell=document.createElement("div");
         cell.style.position="absolute";
