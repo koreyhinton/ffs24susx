@@ -1,5 +1,9 @@
 /*BEGIN*/document.addEventListener('DOMContentLoaded', function() {
 
+window.visited=['D9'];
+window.visitedImages={}
+window.mapVisibility='hidden';
+
 var idx="D9";
 var debug=false
 var dbg_cell=new URL(location.href).searchParams.get("c");
@@ -31,6 +35,62 @@ function draw_button(name,x,y) {
     img.style.height='44px';
     img.style.border='3px solid lightyellow';
     document.getElementById('game').appendChild(img)
+    return img;
+}
+
+
+function draw_map() {
+    var existing=document.getElementById('map');
+    if (existing != null) existing.remove();
+    var tbl=document.createElement("table");
+    tbl.style.position="absolute";
+    tbl.id="map";
+    //tbl.style.border="3px solid black";//transparent";
+    //tbl.style.borderColor="black";//"transparent";
+    //tbl.style.borderSpacing="3px";
+    //tbl.style.borderCollapse="separate";
+    tbl.style.left="224px";
+    tbl.style.top="0px";
+    tbl.style.zIndex="100006";
+    var cols='ABCDEFGHI';
+    for (var r=1;r<=13;r++) {
+        var row=document.createElement("tr");
+        //row.style.borderColor="black";
+        for (var c=0;c<cols.length;c++) {
+            var td=document.createElement("td");
+            td.style.width="48px";
+            td.style.height="48px";
+            td.style.backgroundColor="white";
+            td.style.color="black";
+            //td.style.borderColor="black";
+            var cell=cols[c]+r;
+
+            if (window.visited.includes(cell)){
+                td.style.backgroundColor="#FFCCFF";
+            } else {
+                td.style.backgroundColor="white";//"black";//"#A9A9A9";
+            }
+            if (suspectsList.includes(cell)) {
+                td.style.backgroundColor="#B3000C";//"darkred";
+            }
+            if (cell==idx){
+                td.style.backgroundColor="#23778e";//"#FFCCFF";
+            }
+            else if (!map.hasOwnProperty(cell)) {
+                td.style.backgroundColor="transparent";
+            }
+            if (window.visitedImages.hasOwnProperty(cell)) {
+                td.style.backgroundImage="url('images/elf"+cell+".png')";
+                td.style.backgroundColor="green";
+            }
+            td.style.opacity=0.65;//0.75;
+            row.appendChild(td);
+        }
+        tbl.appendChild(row);
+    }
+
+    document.getElementById("game").appendChild(tbl);
+    tbl.style.visibility=window.mapVisibility;
 }
 
 var suspects=0;
@@ -333,6 +393,7 @@ function shift_screen(from, to) {
        //console.log(map[idx].entrances[from].x+"px")
        var susFlag=map[idx].suspects.length>0;
        if (map[idx].suspects.length>0) {
+           window.visitedImages[idx]=true;
            if (suspects==23) {
                var cell="A1"
                for (var i=0;i<suspectsList.length;i++){
@@ -346,6 +407,7 @@ function shift_screen(from, to) {
            suspects+=1
            document.getElementById("sus").innerHTML="Suspects: "+suspects
        }
+       draw_map();
        transitioning=false
        if (susFlag) { sus_animation() }
    },100);
@@ -547,6 +609,13 @@ function keydown(e) {
         speedf-=1;
         if (speedf<0)speedf=0;
     }
+    else if (e.keyCode == '32') {
+        //space
+        if (window.mapVisibility=='hidden')
+            window.mapVisibility='visible';
+        else window.mapVisibility='hidden';
+        document.getElementById('map').style.visibility=window.mapVisibility;
+    }
     if (keydown_positions.length>2) {
         //if player gets stuck user can press recenter button
         //removing stuck logic will allow player to turn around
@@ -723,6 +792,11 @@ var intId=setInterval(function(){
         draw_button("down",1000,644);
         draw_button("left",956,644);
         draw_button("right",1044,644);
+        var space=draw_button("space",764,644);
+        space.style.width='176px';
+        space.style.height='44px';
+
+        draw_map();
 
         var recenter=document.createElement("a");
         recenter.innerHTML="recenter";

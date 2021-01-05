@@ -20,6 +20,15 @@ div {
 
 #recenter:hover{cursor:pointer}
 
+#map table {
+    border-spacing:1px;
+    border-collapse:separate;
+}
+#map td{
+    border:1px solid grey;
+    
+}
+
 /*xmp display*/
 
 /* /\* |#9F0807*\/ .h0{background-color:#9F0807}/\*.|#EC1515*\/ .h1{background-color:#EC1515}/\*X|#B84949*\/ .h2{background-color:#B84949}/\*o|#CE6161*\/ .h3{background-color:#CE6161}/\*O|#B8B2B2*\/ .h4{background-color:#B8B2B2}/\*+|#CB9797*\/ .h5{background-color:#CB9797}/\*@|gray98*\/ .h6{/\*background-color:gray98*\/}/\*#|black*\/ .h7{background-color:black} */
