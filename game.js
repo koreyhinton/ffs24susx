@@ -681,7 +681,7 @@ function gameloop() {
         {'x':x+w,'y':y+h},*/
         {'x':x+dx+(w/2.0),'y':y+dy+(h/2.0)}//center-point
     ]
-    var valid=inside_simple_polygons(pts,map[idx].road)
+    var valid=(idx!='D9'&&idx!='E9')?inside_simple_polygons_fallback(pts,map[idx].road):inside_simple_polygons(pts,map[idx].road);
     if (valid) {
         setp(x+dx,y+dy,el)
         /*el.style.top=(y+dy)+"px";
