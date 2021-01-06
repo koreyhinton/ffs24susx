@@ -73,15 +73,15 @@ function draw_map() {
             if (suspectsList.includes(cell)) {
                 td.style.backgroundColor="#B3000C";//"darkred";
             }
+            if (window.visitedImages.hasOwnProperty(cell)) {
+                td.style.backgroundImage="url('images/elf"+cell+".png')";
+                td.style.backgroundColor="green";
+            }
             if (cell==idx){
                 td.style.backgroundColor="#23778e";//"#FFCCFF";
             }
             else if (!map.hasOwnProperty(cell)) {
                 td.style.backgroundColor="transparent";
-            }
-            if (window.visitedImages.hasOwnProperty(cell)) {
-                td.style.backgroundImage="url('images/elf"+cell+".png')";
-                td.style.backgroundColor="green";
             }
             td.style.opacity=0.65;//0.75;
             row.appendChild(td);
@@ -354,6 +354,9 @@ function shift_screen(from, to) {
    var suss=document.getElementsByClassName("sus")
    for (var i=0;i<suss.length;i++){suss[i].remove()}
    dbg_clear();
+   if (to=="D9") {
+        guideEl.style.visibility="visible";
+   } else { guideEl.style.visibility="hidden";  }
    document.getElementById('edit').innerHTML='Edit';
    document.getElementById('debug').innerHTML='Debug';
    while (document.getElementsByClassName('edit').length>0){document.getElementsByClassName('edit')[0].remove()}
@@ -695,6 +698,23 @@ function gameloop() {
                 shift_screen(idx, map[idx].exits[i].name)
             }
         }
+        if (idx=='D9'){
+            speechTxt.style.left="660px";
+            speechTxt.style.top="260px";
+            speechBub.style.left="529px";
+            speechBub.style.top="205px";
+
+            //var guidePts=[{'x':508,'y':501},{'x':548,'y':501},{'x':499,'y':542},{'x':546,'y':545}];
+            if (inside_rect(window.d9GuidePoints, rect)) {
+                //guideEl.style.opacity=0.3;
+                speechBub.style.visibility="visible";
+                speechTxt.style.visibility="visible";
+            } else {
+                //guideEl.style.opacity=1;
+                speechBub.style.visibility="hidden";
+                speechTxt.style.visibility="hidden";
+            }
+        }
     } else {
         /*var quads = quadrants_simple_polygons(pts,map[idx])
         var quad1=quads.quad1;var quad2=quads.quad2;var quad3=quads.quad3;
@@ -744,6 +764,8 @@ function gameloop() {
     }*/
 }
 
+window.d9GuidePoints=[{'x':496,'y':549},{'x':501,'y':549},{'x':506,'y':549},{'x':511,'y':549},{'x':516,'y':549},{'x':521,'y':549},{'x':526,'y':549},{'x':531,'y':549},{'x':536,'y':549},{'x':541,'y':549},{'x':546,'y':549},{'x':551,'y':549},{'x':556,'y':549},{'x':561,'y':549},{'x':566,'y':549},{'x':496,'y':522},{'x':501,'y':522},{'x':506,'y':522},{'x':511,'y':522},{'x':516,'y':522},{'x':521,'y':522},{'x':526,'y':522},{'x':531,'y':522},{'x':536,'y':522},{'x':541,'y':522},{'x':546,'y':522},{'x':551,'y':522},{'x':556,'y':522},{'x':561,'y':522},{'x':566,'y':522},{'x':496,'y':522},{'x':496,'y':527},{'x':496,'y':532},{'x':496,'y':537},{'x':496,'y':542},{'x':496,'y':547},{'x':567,'y':522},{'x':567,'y':527},{'x':567,'y':532},{'x':567,'y':537},{'x':567,'y':542},{'x':567,'y':547}]
+
 var intId=setInterval(function(){
     if (instructions.length==0) {
         clearInterval(intId);
@@ -766,6 +788,42 @@ var intId=setInterval(function(){
         speedEl.style.zIndex="1001";
         game.appendChild(speedEl);
         setp(500,530,el);
+
+        /*global*/guideEl=document.createElement("img");
+        guideEl.id="guide";
+        guideEl.src="images/guide.png";
+        guideEl.style.position="absolute";
+        guideEl.style.zIndex="1001";
+        guideEl.style.width="35px";
+        guideEl.style.height="35px";
+        guideEl.style.left="508px";
+        guideEl.style.top="508px";
+        game.appendChild(guideEl)
+
+        /*global*/speechBub=document.createElement("img");
+        speechBub.id="guide";
+        speechBub.src="images/speech_bubble.png";
+        speechBub.style.position="absolute";
+        speechBub.style.zIndex="1001";
+        speechBub.style.left="529px";
+        speechBub.style.top="205px";
+        speechBub.style.visibility="hidden";
+        game.appendChild(speechBub)
+
+        /*global*/speechTxt=document.createElement("div");
+        speechTxt.innerHTML="We're running out of time! Christmas is on hold until the elf last seen wearing a ghostface mask in an air balloon returns all the presents. Control your car with left-right arrow keys to steer and up-down arrow keys to adjust speed and spacebar for the map. Good luck!";
+        speechTxt.style.color="black";
+        speechTxt.style.fontWeight="bold";
+        speechTxt.style.fontSize="22px";
+        speechTxt.style.disabled=true;
+        speechTxt.style.position="absolute";
+        speechTxt.style.zIndex="1002";
+        speechTxt.style.left="660px";
+        speechTxt.style.top="260px";
+        speechTxt.style.width="400px";
+        speechTxt.style.height="300px";
+        speechTxt.style.visibility="hidden";
+        game.appendChild(speechTxt)
 
         /**/var sus=document.createElement("div");
         sus.style.position="absolute";
