@@ -395,6 +395,9 @@ function shift_screen(from, to) {
        if (debug) dbg()
        //console.log(map[idx].entrances[from].x+"px")
        var susFlag=map[idx].suspects.length>0;
+       if (!window.visited.includes(from)){
+           window.visited.push(from);
+       }
        if (map[idx].suspects.length>0) {
            window.visitedImages[idx]=true;
            if (suspects==23) {
