@@ -600,6 +600,7 @@ function keydown(e) {
         var el=document.getElementById("player");
         angle = ((angle + 45) % 360)
         el.src="images/player"+angle+".png";
+        e.view.event.preventDefault();
     }
     else if (e.keyCode == '39') {
         // right
@@ -607,13 +608,16 @@ function keydown(e) {
         angle=((angle - 45) % 360)
         if (angle<0) angle+=360;
         el.src="images/player"+angle+".png";
+        e.view.event.preventDefault();
     }
     else if (e.keyCode == '38') {
         speedf+=1; if (speedf>3)speedf=3;
+        e.view.event.preventDefault();
     }
     else if (e.keyCode == '40') {
         speedf-=1;
         if (speedf<0)speedf=0;
+        e.view.event.preventDefault();
     }
     else if (e.keyCode == '32') {
         //space
@@ -621,26 +625,34 @@ function keydown(e) {
             window.mapVisibility='visible';
         else window.mapVisibility='hidden';
         document.getElementById('map').style.visibility=window.mapVisibility;
+        e.view.event.preventDefault();
     }
-    if (keydown_positions.length>2) {
-        //if player gets stuck user can press recenter button
-        //removing stuck logic will allow player to turn around
-        //while stopped.
-        /*var stuck=(
-            keydown_positions[0].x==keydown_positions[1].x &&
-            keydown_positions[0].y==keydown_positions[1].y &&
-            keydown_positions[1].x==keydown_positions[2].x &&
-            keydown_positions[1].y==keydown_positions[2].y
-        );*/
-        var outofbounds=(
-            player.x<0 || player.x>1280 || player.y>720 || player.y<0
-        );
-        if(/*stuck || */outofbounds) {
-            goto_nearest_safe(player.x, player.y)
-        }
-        keydown_positions=[]
+    var outofbounds=(
+        player.x<0 || player.x>1280 || player.y>720 || player.y<0
+    );
+    if(/*stuck || */outofbounds) {
+        goto_nearest_safe(player.x, player.y)
     }
-    keydown_positions.push({'x':player.x,'y':player.y});
+
+    // if (keydown_positions.length>2) {
+    //     //if player gets stuck user can press recenter button
+    //     //removing stuck logic will allow player to turn around
+    //     //while stopped.
+    //     /*var stuck=(
+    //         keydown_positions[0].x==keydown_positions[1].x &&
+    //         keydown_positions[0].y==keydown_positions[1].y &&
+    //         keydown_positions[1].x==keydown_positions[2].x &&
+    //         keydown_positions[1].y==keydown_positions[2].y
+    //     );*/
+    //     var outofbounds=(
+    //         player.x<0 || player.x>1280 || player.y>720 || player.y<0
+    //     );
+    //     if(/*stuck || */outofbounds) {
+    //         goto_nearest_safe(player.x, player.y)
+    //     }
+    //     keydown_positions=[]
+    // }
+    // keydown_positions.push({'x':player.x,'y':player.y});
 }
 var lastX=500;
 var lastY=530;
