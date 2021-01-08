@@ -245,6 +245,9 @@ function quadrants_simple_polygons(pts, polys) {
 
 function sus_animation() {
 
+    prog.style.visibility="visible";
+    var p_i=0;//prog index
+
     var susw=206
     var sush=340
     var y=(720-sush)
@@ -327,12 +330,29 @@ function sus_animation() {
                     sus.remove()
                     sus2.remove()
                 }
-                y-=1
+                y-=1             
+                if (y%64==0){
+                    if (p_i<" Collecting Evidence ".length){//(parseFloat(p_i.toString())%1==0)) {
+                        //console.log(Math.trunc(p_i))
+                        document.getElementById("progltr"+p_i).classList.add("collected");//style.backgroundColor="lightblue";
+                    }
+                    p_i+=1;
+                }
+        
                 sus2.style.top=y+"px"
             },10); 
         }
         y-=2
         sus.style.top=y+"px"
+        if (y%64==0){
+            if (p_i<" Collecting Evidence ".length){//(parseFloat(p_i.toString())%1==0)) {
+                //console.log(Math.trunc(p_i))
+                document.getElementById("progltr"+p_i).classList.add("collected");//style.backgroundColor="lightblue";
+            } 
+            p_i+=1;
+        }
+
+        //console.log(p_i%1.0==0);
     }, 10);
 
 }
@@ -348,9 +368,18 @@ window.setp=function(x,y,player) {
     player.style.top=y+"px";
     speedEl.style.left=player.style.left;
     speedEl.style.top=player.style.top;
+    if (window.hasOwnProperty("prog")) {
+        prog.style.left=x+"px";
+        prog.style.top=(y-50)+"px";
+    }
 }
 function shift_screen(from, to) {
    transitioning=true
+   elfCard.style.visibility="hidden"
+   susCard.style.visibility="hidden"
+   prog.style.visibility="hidden"
+   var ltrs=document.getElementsByClassName("collected");
+   while (ltrs.length>0)ltrs[0].classList.remove("collected")
    var suss=document.getElementsByClassName("sus")
    for (var i=0;i<suss.length;i++){suss[i].remove()}
    dbg_clear();
@@ -398,21 +427,7 @@ function shift_screen(from, to) {
        if (!window.visited.includes(from)){
            window.visited.push(from);
        }
-       if (map[idx].suspects.length>0) {
-           window.visitedImages[idx]=true;
-           if (suspects==23) {
-               var cell="A1"
-               for (var i=0;i<suspectsList.length;i++){
-                   if (map[suspectsList[i]].suspects.length>0) {
-                       cell=suspectsList[i];
-                   }
-               }
-               location.href="end.html?s="+cell
-           }
-           map[idx].suspects.shift()
-           suspects+=1
-           document.getElementById("sus").innerHTML="Suspects: "+suspects
-       }
+       /*Moved scene completion to card collection in gameloop*/
        draw_map();
        transitioning=false
        if (susFlag) { sus_animation() }
@@ -432,6 +447,33 @@ function create_dot(x,y,color,size) {
     div.style.zIndex="10000";
     document.getElementById("game").appendChild(div)
     return div;
+}
+
+function rect_points(x1,y1,x2,y2) {
+    var s=[]
+    var xf=(x2-x1)%1+1;
+    var yf=(y2-y1)%1+1;
+    var x=x1*xf;
+    while (x<x2) {
+        s.push({'x':x,'y':y2});
+        x+=(5*xf);
+    }
+    x=x1;
+    while (x<x2) {
+        s.push({'x':x,'y':y1});
+        x+=(5*xf);
+    }
+    var y=y1*yf;
+    while (y<y2) {
+        s.push({'x':x1,'y':y})
+        y+=(5*yf);
+    }
+    y=y1*yf;
+    while (y<y2) {
+        s.push({'x':x2,'y':y});
+        y+=(5*yf);
+    }
+    return s;
 }
 
 function draw_rect(x1,y1,x2,y2) {
@@ -546,6 +588,19 @@ function mousedown(e) {
     } else { drawDone=false; drawQ=[];}
 }
 
+function furthest_safe_point(x,y,omit) {
+    var max_dist=0;
+    var max_idx=-1;
+    for (var i=0;i<map[idx].safe.length;i++) {
+        var sx=map[idx].safe[i].x;
+        var sy=map[idx].safe[i].y;
+        var cmp=Math.abs(sx-x)+Math.abs(sy-y);
+        if (omit != null && omit.x==sx && omit.y==sy) continue;
+        if (cmp>max_dist) {max_dist=cmp;max_idx=i;}
+    }
+    return map[idx].safe[max_idx];
+}
+
 function goto_nearest_safe(x,y) {
     var min_dist=99999
     var min_idx=-1
@@ -654,6 +709,26 @@ function keydown(e) {
     // }
     // keydown_positions.push({'x':player.x,'y':player.y});
 }
+window.complete_suspect_scene = function(other_card) {
+    if (parseInt(window.getComputedStyle(other_card).top.replace("px",""))<0){
+        /*End suspect scene logic*/
+        if (map[idx].suspects.length>0) {
+            window.visitedImages[idx]=true;
+            if (suspects==23) {
+                var cell="A1"
+                for (var i=0;i<suspectsList.length;i++){
+                    if (map[suspectsList[i]].suspects.length>0) {
+                        cell=suspectsList[i];
+                    }
+                }
+                location.href="end.html?s="+cell
+            }
+            map[idx].suspects.shift()
+            suspects+=1
+            document.getElementById("sus").innerHTML="Suspects: "+suspects
+        }
+    }
+}
 var lastX=500;
 var lastY=530;
 function gameloop() {
@@ -679,15 +754,62 @@ function gameloop() {
     } else {
         dy=-1;
     }
-    //if (debug) {dx*=2;dy*=2}
+
     dx*=speedf;dy*=speedf;
     var x=px//parseInt(el.style.left.replace("px",""));
     var y=py//parseInt(el.style.top.replace("px",""));
     var road=map[idx];
     var img=document.getElementById("player");
     img.style.zIndex="1000";
+
     var w=parseInt(window.getComputedStyle(img).width.replace("px",""));
     var h=parseInt(window.getComputedStyle(img).height.replace("px",""));
+
+    /*handle progress*/
+    var gLtrProg=document.getElementById("progltr10");
+    if (gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden") {
+        elfCard.src="images/elf"+idx+".png";
+        elfCard.style.visibility="visible";
+        var furth_pt1=furthest_safe_point(player.x,player.y);
+        elfCard.style.left=furth_pt1.x+"px";
+        elfCard.style.top=furth_pt1.y+"px";
+    }
+    var susLtrProg=document.getElementById("progltr13");
+    if (susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden") {
+        susCard.src="images/mask.png";
+        susCard.style.visibility="visible";
+        var omitX=parseInt(window.getComputedStyle(elfCard).left.replace("px",""));
+        var omitY=parseInt(window.getComputedStyle(elfCard).top.replace("px",""));
+        var furth_pt=furthest_safe_point(player.x,player.y,{'x':omitX,'y':omitY});
+        susCard.style.left=furth_pt.x+"px";
+        susCard.style.top=furth_pt.y+"px";
+    }
+    var elf_rect={'x1':parseInt(window.getComputedStyle(elfCard).left.replace("px","")),
+         'y1':parseInt(window.getComputedStyle(elfCard).top.replace("px","")),
+         'x2':parseInt(window.getComputedStyle(elfCard).left.replace("px",""))+parseInt(window.getComputedStyle(elfCard).width.replace("px","")),
+         'y2':parseInt(window.getComputedStyle(elfCard).top.replace("px",""))+parseInt(window.getComputedStyle(elfCard).height.replace("px",""))};
+
+    if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h),
+        elf_rect)
+    ){
+        elfCard.style.left="0px";
+        elfCard.style.top="-600px";
+        window.complete_suspect_scene(susCard)
+        draw_map();
+    }
+    var sus_rect={'x1':parseInt(window.getComputedStyle(susCard).left.replace("px","")),
+         'y1':parseInt(window.getComputedStyle(susCard).top.replace("px",""))}
+    sus_rect.x2=sus_rect.x1+parseInt(window.getComputedStyle(susCard).width.replace("px",""));
+    sus_rect.y2=sus_rect.y1+parseInt(window.getComputedStyle(susCard).height.replace("px",""));
+    if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h), sus_rect)){
+        susCard.style.left="0px";
+        susCard.style.top="-600px";
+        window.complete_suspect_scene(susCard)
+        draw_map();
+    }
+
+
+    //if (debug) {dx*=2;dy*=2}
 //    console.log((y+h)>=road.y2)
     var pts=[/*
         {'x':x, 'y':y},
@@ -870,6 +992,47 @@ var intId=setInterval(function(){
         space.style.height='44px';
 
         draw_map();
+
+        var progLtr=" Collecting Evidence ".split("");
+        /*global*/prog=document.createElement("div")
+        prog.style.position="absolute";
+        for (var i=0;i<progLtr.length;i++) {
+            var el=document.createElement("a");
+            if (i==0||i==progLtr.length-1) {  el.innerHTML="&nbsp;";}
+            else {el.innerHTML=progLtr[i];}
+            if (i==0) { el.style.borderTopLeftRadius="14px"; el.style.borderBottomLeftRadius="14px";}
+            if (i==progLtr.length-1) { el.style.borderTopRightRadius="14px"; el.style.borderBottomRightRadius="14px";}
+            el.style.fontSize="14px";
+            el.style.color="white";
+            
+            el.className="progltr";
+            el.id="progltr"+i;
+            prog.appendChild(el);
+        }
+        prog.style.zIndex="100006";
+        prog.style.visibility="hidden";
+        game.appendChild(prog);
+
+
+        /*global*/elfCard=document.createElement("img");
+        elfCard.src="";//innerHTML="E";
+        elfCard.classList.add("collect");
+        elfCard.style.position="absolute";
+        elfCard.style.border="2px solid lightyellow";
+        elfCard.style.backgroundColor="green";
+        elfCard.style.color="white";
+        elfCard.style.visibility="hidden";
+        game.append(elfCard);
+        /*global*/susCard=document.createElement("img");
+        susCard.src="";//.innerHTML="G";
+        susCard.classList.add("collect");
+        susCard.style.position="absolute";
+        susCard.style.border="2px solid lightyellow";
+        susCard.style.backgroundColor="black";
+        susCard.style.color="white";
+        susCard.style.visibility="hidden";
+        game.append(susCard);
+
 
         var recenter=document.createElement("a");
         recenter.innerHTML="recenter";

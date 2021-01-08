@@ -28,6 +28,19 @@ div {
     border:1px solid grey;
     
 }
+img.collect {
+    padding-left:4px;
+    padding-right:4px;
+    //border-top-left-radius:8px;
+    //border-bottom-right-radius:8px;
+    font-size:22px;
+    text-decoration:underline;
+    width:24px;
+    height:24px;
+}
+a.collected {
+    background-color:lightblue;
+}
 
 /*xmp display*/
 
