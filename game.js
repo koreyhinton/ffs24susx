@@ -23,6 +23,9 @@ var angle=225;
 var px=-1  //player x, each gameloop needs position data immediately
 var py=-1
 
+window.card_inventory=[]
+window.item=null
+
 function draw_button(name,x,y) {
     var img=document.createElement("img");
     img.src="images/icons/"+name+".png";
@@ -692,6 +695,46 @@ function keydown(e) {
         document.getElementById('map').style.visibility=window.mapVisibility;
         e.view.event.preventDefault();
     }
+    else if (e.key=='Enter'){
+        //enter
+        var inv=document.getElementsByClassName("cardinv");
+        if (inv.length == 0) {
+            var y=597-22;
+            var zDex=1000009+47;
+            for (var i=0;i<window.card_inventory.length/*47*/;i++) {
+                var c=window.card_inventory[i/*%2*/];
+                var card=window.draw_card(c.src,c.color);
+                card.className="cardinv";
+                card.style.left="1206px";
+                card.style.top=y+"px";
+                card.style.visibility="visible";
+                card.style.zIndex=zDex+"";/*"1000009"*/
+                card.opacity=0.7
+                y-=12;
+                zDex-=1;
+             }
+        } else {
+            while (inv.length>0) inv[0].remove();
+        }
+        e.view.event.preventDefault();
+    }
+    else if (e.key =='0') {
+        // 0
+        var a=document.createElement("a");
+        a.style.position="absolute";
+        if (suspects>0){
+            a.innerHTML="You reach into your bag and all you see are evidence cards, you can't give those up.";
+        } else {a.innerHTML="You reach into your empty bag.";}
+        a.style.left="1050px";
+        a.style.top="525px";
+        a.style.width="180px";
+        a.style.zIndex="1000009";
+        a.className="narrator";
+        game.appendChild(a);
+        setTimeout(function() {
+            a.remove();
+        },3000);
+    }
     var outofbounds=(
         player.x<0 || player.x>1280 || player.y>720 || player.y<0
     );
@@ -719,11 +762,13 @@ function keydown(e) {
     // }
     // keydown_positions.push({'x':player.x,'y':player.y});
 }
-window.complete_suspect_scene = function(other_card) {
+window.complete_suspect_scene = function(this_card,other_card) {
     if (parseInt(window.getComputedStyle(other_card).top.replace("px",""))<0){
         /*End suspect scene logic*/
         if (map[idx].suspects.length>0) {
             window.visitedImages[idx]=true;
+            window.card_inventory.push({'src':other_card.src,'color':window.getComputedStyle(other_card).backgroundColor});//stored in the order that
+            window.card_inventory.push({'src':this_card.src,'color':window.getComputedStyle(this_card).backgroundColor});//these 2 cards were collected
             if (suspects==23) {
                 var cell="A1"
                 for (var i=0;i<suspectsList.length;i++){
@@ -804,7 +849,7 @@ function gameloop() {
     ){
         elfCard.style.left="0px";
         elfCard.style.top="-600px";
-        window.complete_suspect_scene(susCard)
+        window.complete_suspect_scene(elfCard,susCard)
         draw_map();
     }
     var sus_rect={'x1':parseInt(window.getComputedStyle(susCard).left.replace("px","")),
@@ -814,7 +859,7 @@ function gameloop() {
     if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h), sus_rect)){
         susCard.style.left="0px";
         susCard.style.top="-600px";
-        window.complete_suspect_scene(susCard)
+        window.complete_suspect_scene(susCard,elfCard)
         draw_map();
     }
 
@@ -921,6 +966,18 @@ function gameloop() {
 
 window.d9GuidePoints=[{'x':496,'y':549},{'x':501,'y':549},{'x':506,'y':549},{'x':511,'y':549},{'x':516,'y':549},{'x':521,'y':549},{'x':526,'y':549},{'x':531,'y':549},{'x':536,'y':549},{'x':541,'y':549},{'x':546,'y':549},{'x':551,'y':549},{'x':556,'y':549},{'x':561,'y':549},{'x':566,'y':549},{'x':496,'y':522},{'x':501,'y':522},{'x':506,'y':522},{'x':511,'y':522},{'x':516,'y':522},{'x':521,'y':522},{'x':526,'y':522},{'x':531,'y':522},{'x':536,'y':522},{'x':541,'y':522},{'x':546,'y':522},{'x':551,'y':522},{'x':556,'y':522},{'x':561,'y':522},{'x':566,'y':522},{'x':496,'y':522},{'x':496,'y':527},{'x':496,'y':532},{'x':496,'y':537},{'x':496,'y':542},{'x':496,'y':547},{'x':567,'y':522},{'x':567,'y':527},{'x':567,'y':532},{'x':567,'y':537},{'x':567,'y':542},{'x':567,'y':547}]
 
+window.draw_card = function(src,color) {
+    var card = document.createElement("img");
+    card.src=src;//innerHTML="E";
+    card.style.position="absolute";
+    card.style.border="2px solid lightyellow";
+    card.style.backgroundColor=color;
+    card.style.color="white";
+    card.style.visibility="hidden";
+    game.append(card);
+    return card;
+}
+
 var intId=setInterval(function(){
     if (instructions.length==0) {
         clearInterval(intId);
@@ -1002,13 +1059,15 @@ var intId=setInterval(function(){
         document.onkeydown = keydown;
         document.onclick=mousedown;
 
-        draw_button("up",1000,600);
+        draw_button("up",1000,600-3);
         draw_button("down",1000,644);
-        draw_button("left",956,644);
-        draw_button("right",1044,644);
+        draw_button("left",956-3,644);
+        draw_button("right",1044+3,644);
         var space=draw_button("space",764,644);
         space.style.width='176px';
         space.style.height='44px';
+        draw_button("0",1103,644).style.width="91px";
+        draw_button("enter",1206,597).style.height="91px";
 
         draw_map();
 
@@ -1033,31 +1092,17 @@ var intId=setInterval(function(){
         game.appendChild(prog);
 
 
-        /*global*/elfCard=document.createElement("img");
-        elfCard.src="";//innerHTML="E";
+        /*global*/elfCard=window.draw_card("","green");
         elfCard.classList.add("collect");
-        elfCard.style.position="absolute";
-        elfCard.style.border="2px solid lightyellow";
-        elfCard.style.backgroundColor="green";
-        elfCard.style.color="white";
-        elfCard.style.visibility="hidden";
-        game.append(elfCard);
-        /*global*/susCard=document.createElement("img");
-        susCard.src="";//.innerHTML="G";
+        /*global*/susCard=window.draw_card("","black");
         susCard.classList.add("collect");
-        susCard.style.position="absolute";
-        susCard.style.border="2px solid lightyellow";
-        susCard.style.backgroundColor="black";
-        susCard.style.color="white";
-        susCard.style.visibility="hidden";
-        game.append(susCard);
 
 
         var recenter=document.createElement("a");
         recenter.innerHTML="recenter";
         recenter.onclick= function() {goto_nearest_safe(640,360);}
         recenter.style.position="absolute";
-        recenter.style.left="1100px";
+        recenter.style.left="10px";//"1100px";
         recenter.style.top="658px";
         recenter.style.zIndex="1000008";
         recenter.id="recenter";
