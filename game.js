@@ -315,7 +315,7 @@ function sus_animation() {
             if (transitioning) {
                 //sus.visibility="hidden"
                 //sus2.visibility="hidden"
-                sus.remove();removedEarly=true
+                sus.remove();removedEarly=true;y=-sush-1;
                 return;
             }
             clearInterval(animIntId)
@@ -329,6 +329,7 @@ function sus_animation() {
                     clearInterval(animIntId2)
                     sus.remove()
                     sus2.remove()
+                    if (transitioning){y=-sush-1;return;}
                 }
                 y-=1             
                 if (y%64==0){
@@ -375,11 +376,6 @@ window.setp=function(x,y,player) {
 }
 function shift_screen(from, to) {
    transitioning=true
-   elfCard.style.visibility="hidden"
-   susCard.style.visibility="hidden"
-   prog.style.visibility="hidden"
-   var ltrs=document.getElementsByClassName("collected");
-   while (ltrs.length>0)ltrs[0].classList.remove("collected")
    var suss=document.getElementsByClassName("sus")
    for (var i=0;i<suss.length;i++){suss[i].remove()}
    dbg_clear();
@@ -390,6 +386,11 @@ function shift_screen(from, to) {
    document.getElementById('debug').innerHTML='Debug';
    while (document.getElementsByClassName('edit').length>0){document.getElementsByClassName('edit')[0].remove()}
    if (document.getElementById('editlog')!=null){document.getElementById('editlog').remove()}
+
+   for (var i=0;i<" Collecting Evidence ".length;i++) {//hack part 1
+       document.getElementById("progltr"+i).classList.add("collected");
+   } prog.style.visibility="hidden"
+
    // shifting screens HAS to wait a bit using setTimeout,
    // this is because previous game loops will linger
    // and the player will unintentionally skip a cell,
@@ -399,6 +400,15 @@ function shift_screen(from, to) {
        lastX=-1;
        idx=to
        setp(map[idx].entrances[from].x, map[idx].entrances[from].y)
+
+       /*undoing collected letters has to wait to avoid cards dropping even after leaving scene*/
+       var ltrs=document.getElementsByClassName("collected");
+       while (ltrs.length>0)ltrs[0].classList.remove("collected");
+       elfCard.style.visibility="hidden"
+       susCard.style.visibility="hidden"
+       prog.style.visibility="hidden"
+
+
        console.log(from+"->"+to)
        document.getElementById("cell").innerHTML=to
        var game=document.getElementById("game");
@@ -767,7 +777,7 @@ function gameloop() {
 
     /*handle progress*/
     var gLtrProg=document.getElementById("progltr10");
-    if (gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden") {
+    if (gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         elfCard.src="images/elf"+idx+".png";
         elfCard.style.visibility="visible";
         var furth_pt1=furthest_safe_point(player.x,player.y);
@@ -775,7 +785,7 @@ function gameloop() {
         elfCard.style.top=furth_pt1.y+"px";
     }
     var susLtrProg=document.getElementById("progltr13");
-    if (susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden") {
+    if (susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         susCard.src="images/mask.png";
         susCard.style.visibility="visible";
         var omitX=parseInt(window.getComputedStyle(elfCard).left.replace("px",""));
@@ -806,6 +816,15 @@ function gameloop() {
         susCard.style.top="-600px";
         window.complete_suspect_scene(susCard)
         draw_map();
+    }
+
+    //ugh workaround card showing up after leaving scene bug
+    if (!suspectsList.includes(idx)){
+        var ltrs=document.getElementsByClassName("collected");
+        while (ltrs.length>0)ltrs[0].classList.remove("collected");
+        elfCard.style.visibility="hidden"
+        susCard.style.visibility="hidden"
+        prog.style.visibility="hidden"
     }
 
 
