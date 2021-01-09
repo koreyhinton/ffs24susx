@@ -827,7 +827,6 @@ function gameloop() {
         prog.style.visibility="hidden"
     }
 
-
     //if (debug) {dx*=2;dy*=2}
 //    console.log((y+h)>=road.y2)
     var pts=[/*
@@ -837,7 +836,7 @@ function gameloop() {
         {'x':x+w,'y':y+h},*/
         {'x':x+dx+(w/2.0),'y':y+dy+(h/2.0)}//center-point
     ]
-    var valid=(idx!='D9'&&idx!='E9')?inside_simple_polygons_fallback(pts,map[idx].road):inside_simple_polygons(pts,map[idx].road);
+    var valid=(idx!='D9'&&idx!='E9'&&idx!='E8')?inside_simple_polygons_fallback(pts,map[idx].road):inside_simple_polygons(pts,map[idx].road);
     if (valid) {
         setp(x+dx,y+dy,el)
         /*el.style.top=(y+dy)+"px";
@@ -995,6 +994,7 @@ var intId=setInterval(function(){
         cell.style.left="1200px";
         cell.style.top="0px";
         cell.innerHTML=idx;
+        cell.style.zIndex="100006";
         game.appendChild(cell);
 
         //if (debug) dbg();
