@@ -735,6 +735,30 @@ function keydown(e) {
             a.remove();
         },3000);
     }
+    else if (e.key=='w') {
+        var el=document.getElementById("player");
+        el.src="images/player90.png";
+        angle=90;
+        e.view.event.preventDefault();
+    }
+    else if (e.key=='a') {
+        var el=document.getElementById("player");
+        el.src="images/player180.png";
+        angle=180;
+        e.view.event.preventDefault();
+    }
+    else if (e.key=='s') {
+        var el=document.getElementById("player");
+        el.src="images/player270.png";
+        angle=270;
+        e.view.event.preventDefault();
+    }
+    else if (e.key=='d') {
+        var el=document.getElementById("player");
+        el.src="images/player0.png";
+        angle=0;
+        e.view.event.preventDefault();
+    }
     var outofbounds=(
         player.x<0 || player.x>1280 || player.y>720 || player.y<0
     );
@@ -1068,6 +1092,10 @@ var intId=setInterval(function(){
         space.style.height='44px';
         draw_button("0",1103,644).style.width="91px";
         draw_button("enter",1206,597).style.height="91px";
+        draw_button("w",50,535);
+        draw_button("a",3,582);
+        draw_button("s",50,582);
+        draw_button("d",97,582);
 
         draw_map();
 
