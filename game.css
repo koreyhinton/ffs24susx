@@ -46,11 +46,62 @@ a.collected {
     background-color:lightblue;
 }
 
-a.narrator {
+a.narrator, {
     color: #fff;
     text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
     font-size:18px;
 }
+
+#help {
+    color: #fff;
+    text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+    font-size:24px;
+}
+
+a.splash {
+    position:absolute;
+    text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+    font-size:60px;
+    left:464px;
+}
+
+a.splashplay {
+    position:absolute;
+    text-shadow:3px 0 0 green, 0 -3px 0 green, 0 3px 0 green, -3px 0 0 green;
+    font-size:70px;
+    left:550px;
+    top:420px;
+    background-color:white;
+    color:white;
+    border:3px solid #B3000C;
+    border-radius:35px;
+    padding-left:10px;
+    padding-right:10px;
+}
+a.splashplay:hover{cursor:pointer}
+
+
+a.xredtxtoutline {
+    text-shadow:1px 0 0 #B3000C, 0 -1px 0 #B3000C, 0 1px 0 #B3000C, -1px 0 0 #B3000C;
+}
+
+a.xgreentxtoutline {
+    text-shadow:1px 0 0 green, 0 -1px 0 green, 0 1px 0 green, -1px 0 0 green;
+}
+
+a.splash1{
+    top:70px;
+}
+a.splash2{
+    top:140px;
+}
+a.splash3{
+    top:210px;
+}
+a.splash4{
+    top:280px;
+}
+
 
 /*xmp display*/
 

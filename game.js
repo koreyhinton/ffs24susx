@@ -18,6 +18,52 @@ var instructions="Welcome mouse detective! Are you ready for your first assignme
 
 if (dbg_cell!=null) instructions=""
 
+function splash_screen(){
+    var p="&nbsp;";
+    var game=document.getElementById("game")
+    var a1=document.createElement("a");
+    a1.innerHTML=p+p+p+p+"24"+p+p+p;
+    a1.className="splash splash1 xredtxtoutline";
+    var a2=document.createElement("a");
+    a2.innerHTML=p+"Suspects";
+    a2.className="splash splash2 xgreentxtoutline";
+    var a3=document.createElement("a");
+    a3.innerHTML=p+p+p+p+"on"+p+p+p;
+    a3.className="splash splash3 xredtxtoutline";
+    var a4=document.createElement("a");
+    a4.innerHTML="Christmas!";
+    a4.className="splash splash4 xgreentxtoutline";
+    game.appendChild(a1);
+    game.appendChild(a2);
+    game.appendChild(a3);
+    game.appendChild(a4);
+
+    var btn=document.createElement("a");
+    btn.className="splashplay";
+    btn.innerHTML="Play";
+    btn.onmousedown=function(){ instructions=""; setTimeout(function(){ btn.remove();a1.remove();a2.remove();a3.remove();a4.remove();  },1400)  };
+    game.appendChild(btn);
+}
+splash_screen();
+
+var splashIntervalId=setInterval(function() {
+    if (instructions.length==0){clearInterval(splashIntervalId);return;}
+    var splash_words=document.getElementsByClassName("splash");
+    if (splash_words.length==0) clearInterval(splashIntervalId);
+    else {
+        for (var i=0;i<splash_words.length;i++) {
+            var sw=splash_words[i];
+            if (sw.classList.contains("xgreentxtoutline")) {
+                sw.classList.remove("xgreentxtoutline");
+                sw.classList.add("xredtxtoutline");
+            }
+            else if (sw.classList.contains("xredtxtoutline")) {
+                sw.classList.remove("xredtxtoutline");
+                sw.classList.add("xgreentxtoutline");
+            }
+        }
+    }
+}, 1100);
 
 var angle=225;
 var px=-1  //player x, each gameloop needs position data immediately
@@ -695,6 +741,41 @@ function keydown(e) {
         document.getElementById('map').style.visibility=window.mapVisibility;
         e.view.event.preventDefault();
     }
+    else if (e.key=="q"||e.key=="Q") {
+        if (document.getElementById("help")==null) {
+            var shroud=document.createElement("div");
+            shroud.id="shroud";
+            shroud.style.position="absolute";
+            shroud.style.top="0px";
+            shroud.style.left="0px";
+            shroud.style.width="1280px";
+            shroud.style.height="720px";
+            shroud.style.backgroundColor="rgba(0,0,0,0.8)";
+            shroud.style.zIndex="1000007";
+            var help=document.createElement("a");
+            help.id="help";
+            help.innerHTML ="<p>Sharp (grid) Steering Controls: w,a,s,d</p>";
+            help.innerHTML+="<p>Smooth (radial) Steering Controls: left arrow, right arrow</p>";
+            help.innerHTML+="<p>Gas pedal (speed increase): up arrow</p>";
+            help.innerHTML+="<p>Brake pedal (speed decrease): down arrow</p>";
+            help.innerHTML+="<p>Map: spacebar</p>";
+            help.innerHTML+="<p>Use Item: 0</p>";
+            help.innerHTML+="<p>View Inventory: Enter</p>";
+            help.innerHTML+="<p>Toggle Help: q</p>";
+            help.style.position="absolute";
+            help.style.top="25px";
+            help.style.left="25px";
+            help.style.width="1280px";
+            help.style.height="720px";
+            help.style.zIndex="1000008";
+            document.getElementById("game").append(help);
+            document.getElementById("game").append(shroud);
+        } else {
+            document.getElementById("help").remove();
+            document.getElementById("shroud").remove();
+        }
+        e.view.event.preventDefault();
+    }
     else if (e.key=='Enter'){
         //enter
         var inv=document.getElementsByClassName("cardinv");
@@ -1090,12 +1171,18 @@ var intId=setInterval(function(){
         var space=draw_button("space",764,644);
         space.style.width='176px';
         space.style.height='44px';
-        draw_button("0",1103,644).style.width="91px";
-        draw_button("enter",1206,597).style.height="91px";
-        draw_button("w",50,535);
-        draw_button("a",3,582);
-        draw_button("s",50,582);
-        draw_button("d",97,582);
+        space.style.border="3px solid rgba(255,7,58,0.4)";
+        var zero=draw_button("0",1103,644);
+        zero.style.width="91px";
+        zero.style.border="3px solid rgba(91,255,3,0.4)";
+        var enter=draw_button("enter",1206,597);
+        enter.style.height="91px";
+        enter.style.border="3px solid rgba(3,91,255,0.4)";
+        draw_button("w",50,535).style.border="3px solid rgba(125,18,255,0.4)";//#7d12ff";
+        draw_button("a",3,582).style.border="3px solid rgba(125,18,255,0.4)";
+        draw_button("s",50,582).style.border="3px solid rgba(125,18,255,0.4)";
+        draw_button("d",97,582).style.border="3px solid rgba(125,18,255,0.4)";
+        draw_button("q",3,535).style.border="3px solid rgba(255,103,0,0.4)";//#FF6700";
 
         draw_map();
 
@@ -1139,8 +1226,8 @@ var intId=setInterval(function(){
         setInterval(gameloop, 10);
         return;
     }
-    document.getElementById("game").innerHTML=document.getElementById("game").innerHTML+instructions[0];
-    instructions=instructions.substring(1);
+    //document.getElementById("game").innerHTML=document.getElementById("game").innerHTML+instructions[0];
+    //instructions=instructions.substring(1);
     //setTimeout(load_game, 2400);
 }, 32);
 
