@@ -71,6 +71,8 @@ var py=-1
 
 window.card_inventory=[]
 window.item=null
+window.SUSPECT_IDX=20;
+window.SUSPECT_CELL="A1";
 
 function draw_button(name,x,y) {
     var img=document.createElement("img");
@@ -368,29 +370,35 @@ function sus_animation() {
                 return;
             }
             clearInterval(animIntId)
-            if (!removedEarly)            game.appendChild(sus2)
+            if (!removedEarly && suspects!=window.SUSPECT_IDX)            game.appendChild(sus2)
             //if (sus.visibility!="hidden"){sus2.style.visibility="visible"}
             //sus.visibility="hidden"
             sus.remove()
             y=(720-sush)
-            var animIntId2=setInterval(function() {
-                if (transitioning || y<-sush) {
-                    clearInterval(animIntId2)
-                    sus.remove()
-                    sus2.remove()
-                    if (transitioning){y=-sush-1;return;}
-                }
-                y-=1             
-                if (y%64==0){
-                    if (p_i<" Collecting Evidence ".length){//(parseFloat(p_i.toString())%1==0)) {
-                        //console.log(Math.trunc(p_i))
-                        document.getElementById("progltr"+p_i).classList.add("collected");//style.backgroundColor="lightblue";
+            if (suspects==window.SUSPECT_IDX){
+                //var ltrs=document.getElementsByClassName("progltr")
+                //for (var i=0;i<ltrs.length;i++){ltrs[i].classList.add("collected")}
+            }
+            if (suspects!=window.SUSPECT_IDX){
+                var animIntId2=setInterval(function() {
+                    if (transitioning || y<-sush) {
+                        clearInterval(animIntId2)
+                        sus.remove()
+                        sus2.remove()
+                        if (transitioning){y=-sush-1;return;}
                     }
-                    p_i+=1;
-                }
-        
-                sus2.style.top=y+"px"
-            },10); 
+                    y-=1             
+                    if (y%64==0){
+                        if (p_i<" Collecting Evidence ".length){//(parseFloat(p_i.toString())%1==0)) {
+                            //console.log(Math.trunc(p_i))
+                            document.getElementById("progltr"+p_i).classList.add("collected");//style.backgroundColor="lightblue";
+                        }
+                        p_i+=1;
+                    }
+            
+                    sus2.style.top=y+"px"
+                },10); 
+            }
         }
         y-=2
         sus.style.top=y+"px"
@@ -431,6 +439,8 @@ function shift_screen(from, to) {
    if (to=="D9") {
         guideEl.style.visibility="visible";
    } else { guideEl.style.visibility="hidden";  }
+   if (to=="C8") hunter.style.visibility="visible";
+   else hunter.style.visibility="hidden";
    document.getElementById('edit').innerHTML='Edit';
    document.getElementById('debug').innerHTML='Debug';
    while (document.getElementsByClassName('edit').length>0){document.getElementsByClassName('edit')[0].remove()}
@@ -705,6 +715,27 @@ function point_at_nearest_safe(x,y) {
     ///player.src="images/player"+angle+".png";
 }
 
+window.draw_inv = function(inv) {
+    if (inv == null) {
+        inv=document.getElementsByClassName("cardinv");
+        if (inv.length==0)return;
+    }
+    var y=597-22;
+    var zDex=1000009+47;
+    for (var i=0;i<window.card_inventory.length/*47*/;i++) {
+        var c=window.card_inventory[i/*%2*/];
+        var card=window.draw_card(c.src,c.color);
+        card.className="cardinv";
+        card.style.left="1206px";
+        card.style.top=y+"px";
+        card.style.visibility="visible";
+        card.style.zIndex=zDex+"";/*"1000009"*/
+        card.opacity=0.7
+        y-=12;
+        zDex-=1;
+     }
+}
+
 var keydown_positions=[]
 speedf=1;//speed factor
 function keydown(e) {
@@ -780,20 +811,7 @@ function keydown(e) {
         //enter
         var inv=document.getElementsByClassName("cardinv");
         if (inv.length == 0) {
-            var y=597-22;
-            var zDex=1000009+47;
-            for (var i=0;i<window.card_inventory.length/*47*/;i++) {
-                var c=window.card_inventory[i/*%2*/];
-                var card=window.draw_card(c.src,c.color);
-                card.className="cardinv";
-                card.style.left="1206px";
-                card.style.top=y+"px";
-                card.style.visibility="visible";
-                card.style.zIndex=zDex+"";/*"1000009"*/
-                card.opacity=0.7
-                y-=12;
-                zDex-=1;
-             }
+            window.draw_inv(inv);
         } else {
             while (inv.length>0) inv[0].remove();
         }
@@ -867,25 +885,33 @@ function keydown(e) {
     // }
     // keydown_positions.push({'x':player.x,'y':player.y});
 }
-window.complete_suspect_scene = function(this_card,other_card) {
+window.complete_suspect_scene = function(this_card,other_card,green_card,black_card) {
     if (parseInt(window.getComputedStyle(other_card).top.replace("px",""))<0){
         /*End suspect scene logic*/
         if (map[idx].suspects.length>0) {
             window.visitedImages[idx]=true;
-            window.card_inventory.push({'src':other_card.src,'color':window.getComputedStyle(other_card).backgroundColor});//stored in the order that
-            window.card_inventory.push({'src':this_card.src,'color':window.getComputedStyle(this_card).backgroundColor});//these 2 cards were collected
+            window.card_inventory.push({'src':green_card.src,'color':window.getComputedStyle(green_card).backgroundColor});//stored in the order that
+            if (suspects!=window.SUSPECT_IDX){
+                window.card_inventory.push({'src':black_card.src,'color':window.getComputedStyle(black_card).backgroundColor});//these 2 cards were collected
+            } else {
+                window.SUSPECT_CELL=idx;
+                var ltrs=document.getElementsByClassName("progltr");
+                var i=0;
+                while (i<ltrs.length)ltrs[i++].classList.add("collected");
+            }
             if (suspects==23) {
-                var cell="A1"
+                /*var cell="A1"
                 for (var i=0;i<suspectsList.length;i++){
                     if (map[suspectsList[i]].suspects.length>0) {
                         cell=suspectsList[i];
                     }
-                }
-                location.href="end.html?s="+cell
+                }*/
+                location.href="end.html?s="+window.SUSPECT_CELL;
             }
             map[idx].suspects.shift()
             suspects+=1
             document.getElementById("sus").innerHTML="Suspects: "+suspects
+            window.draw_inv();
         }
     }
 }
@@ -935,7 +961,7 @@ function gameloop() {
         elfCard.style.top=furth_pt1.y+"px";
     }
     var susLtrProg=document.getElementById("progltr13");
-    if (susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
+    if (map[idx].suspects.length>0 && susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         susCard.src="images/mask.png";
         susCard.style.visibility="visible";
         var omitX=parseInt(window.getComputedStyle(elfCard).left.replace("px",""));
@@ -954,7 +980,7 @@ function gameloop() {
     ){
         elfCard.style.left="0px";
         elfCard.style.top="-600px";
-        window.complete_suspect_scene(elfCard,susCard)
+        window.complete_suspect_scene(elfCard,susCard,elfCard,susCard)
         draw_map();
     }
     var sus_rect={'x1':parseInt(window.getComputedStyle(susCard).left.replace("px","")),
@@ -964,7 +990,7 @@ function gameloop() {
     if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h), sus_rect)){
         susCard.style.left="0px";
         susCard.style.top="-600px";
-        window.complete_suspect_scene(susCard,elfCard)
+        window.complete_suspect_scene(susCard,elfCard,elfCard,susCard)
         draw_map();
     }
 
@@ -1116,6 +1142,18 @@ var intId=setInterval(function(){
         guideEl.style.left="508px";
         guideEl.style.top="508px";
         game.appendChild(guideEl)
+
+        /*global*/hunter=document.createElement("img");
+        hunter.id="hunter";
+        hunter.src="images/hunter.png";
+        hunter.style.position="absolute";
+        hunter.style.zIndex="1001";
+        hunter.style.width="35px";
+        hunter.style.height="35px";
+        hunter.style.left="508px";
+        hunter.style.top="680px";
+        hunter.style.visibility="hidden";
+        game.appendChild(hunter)
 
         /*global*/speechBub=document.createElement("img");
         speechBub.id="guide";
