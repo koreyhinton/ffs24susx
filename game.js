@@ -441,6 +441,11 @@ function shift_screen(from, to) {
    } else { guideEl.style.visibility="hidden";  }
    if (to=="C8") hunter.style.visibility="visible";
    else hunter.style.visibility="hidden";
+   if (to=="D8") santa.style.visibility="visible";
+   else santa.style.visibility="hidden";
+   if (to=="C3") {vampire.style.visibility="visible";coin.style.visibility="visible";}
+   else {vampire.style.visibility="hidden";coin.style.visibility="hidden";}
+   if (window.item=="coin") {coin.style.visibility="visible";window.position_coin(coin);}
    document.getElementById('edit').innerHTML='Edit';
    document.getElementById('debug').innerHTML='Debug';
    while (document.getElementsByClassName('edit').length>0){document.getElementsByClassName('edit')[0].remove()}
@@ -915,6 +920,27 @@ window.complete_suspect_scene = function(this_card,other_card,green_card,black_c
         }
     }
 }
+
+window.SPEECH_D9="We're running out of time! Christmas is on hold until the elf last seen wearing a ghostface mask in an air balloon returns all the presents. Control your car with left-right arrow keys to steer and up-down arrow keys to adjust speed and spacebar for the map. Good luck!";
+window.SPEECH_D8="Thanks for your help! Press enter to view your card progress. Collect all 24 elf suspect cards and then go back to the one where the pattern does not match. And remember to bring the presents back to me.";
+window.SPEECH_C8="Hello friend. If it's not werewolves it's vampires, and there's been a lot of recent sightings. It's my duty to keep this place safe. By the way, I am really in need of some silver, if you find some I'll trade you for it.";
+window.SPEECH_C3="Iv you see a seelvur coin, pleased I wulld be if you keep it. You wull need it more t'an 'ome."
+
+window.setspeech = function(bub,txt,x,y) {
+    txt.style.left=(x+131)+"px";//"660px";
+    txt.style.top=(y+55)+"px";//"260px";
+    bub.style.left=x+"px";//"529px";
+    bub.style.top=y+"px";//"205px";
+}
+
+window.position_coin = function(c) {
+    c.style.left="1156px";
+    c.style.top="664px";
+    c.style.visibility="visible";
+    //coin.style.zIndex="2000000";
+//                coin.style.width="100px";
+}
+
 var lastX=500;
 var lastY=530;
 function gameloop() {
@@ -1029,18 +1055,47 @@ function gameloop() {
                 shift_screen(idx, map[idx].exits[i].name)
             }
         }
-        if (idx=='D9'){
-            speechTxt.style.left="660px";
-            speechTxt.style.top="260px";
-            speechBub.style.left="529px";
-            speechBub.style.top="205px";
+        if (idx=='D9'||idx=='D8'||idx=='C8'||idx=='C3'){
 
             //var guidePts=[{'x':508,'y':501},{'x':548,'y':501},{'x':499,'y':542},{'x':546,'y':545}];
-            if (inside_rect(window.d9GuidePoints, rect)) {
+            if (idx=='D9'&&inside_rect(window.d9GuidePoints, rect)) {
                 //guideEl.style.opacity=0.3;
+                /*speechTxt.style.left="660px";
+                speechTxt.style.top="260px";
+                speechBub.style.left="529px";
+                speechBub.style.top="205px";*/
+                speechTxt.innerHTML=window.SPEECH_D9;
+                window.setspeech(speechBub, speechTxt, 529, 205);
                 speechBub.style.visibility="visible";
                 speechTxt.style.visibility="visible";
-            } else {
+            }
+            else if(idx=='D8'&&inside_rect(window.d8SantaPoints, rect)) {
+                window.setspeech(speechBub, speechTxt, 619, 355);
+                speechTxt.innerHTML=window.SPEECH_D8;
+                speechBub.style.visibility="visible";
+                speechTxt.style.visibility="visible";
+            }
+            else if(idx=='C8'&&inside_rect(window.c8HunterPoints, rect)) {
+                window.setspeech(speechBub, speechTxt, 532, 360);
+                speechTxt.innerHTML=window.SPEECH_C8;
+                speechBub.style.visibility="visible";
+                speechTxt.style.visibility="visible";
+            }
+            else if(idx=='C3'&&inside_rect(window.c3VampirePoints, rect)) {
+                window.setspeech(speechBub, speechTxt, 532, 360);
+                speechTxt.innerHTML=window.SPEECH_C3;
+                speechBub.style.visibility="visible";
+                speechTxt.style.visibility="visible";
+            }
+            else if(idx=='C3'&&inside_rect(window.c3CoinPoints, rect)) {
+                window.item="coin";
+                window.position_coin(coin);
+                /*window.setspeech(speechBub, speechTxt, 532, 360);
+                speechTxt.innerHTML=window.SPEECH_C3;
+                speechBub.style.visibility="visible";
+                speechTxt.style.visibility="visible";*/
+            }
+            else {
                 //guideEl.style.opacity=1;
                 speechBub.style.visibility="hidden";
                 speechTxt.style.visibility="hidden";
@@ -1095,7 +1150,15 @@ function gameloop() {
     }*/
 }
 
-window.d9GuidePoints=[{'x':496,'y':549},{'x':501,'y':549},{'x':506,'y':549},{'x':511,'y':549},{'x':516,'y':549},{'x':521,'y':549},{'x':526,'y':549},{'x':531,'y':549},{'x':536,'y':549},{'x':541,'y':549},{'x':546,'y':549},{'x':551,'y':549},{'x':556,'y':549},{'x':561,'y':549},{'x':566,'y':549},{'x':496,'y':522},{'x':501,'y':522},{'x':506,'y':522},{'x':511,'y':522},{'x':516,'y':522},{'x':521,'y':522},{'x':526,'y':522},{'x':531,'y':522},{'x':536,'y':522},{'x':541,'y':522},{'x':546,'y':522},{'x':551,'y':522},{'x':556,'y':522},{'x':561,'y':522},{'x':566,'y':522},{'x':496,'y':522},{'x':496,'y':527},{'x':496,'y':532},{'x':496,'y':537},{'x':496,'y':542},{'x':496,'y':547},{'x':567,'y':522},{'x':567,'y':527},{'x':567,'y':532},{'x':567,'y':537},{'x':567,'y':542},{'x':567,'y':547}]
+window.d9GuidePoints=[{'x':496,'y':549},{'x':501,'y':549},{'x':506,'y':549},{'x':511,'y':549},{'x':516,'y':549},{'x':521,'y':549},{'x':526,'y':549},{'x':531,'y':549},{'x':536,'y':549},{'x':541,'y':549},{'x':546,'y':549},{'x':551,'y':549},{'x':556,'y':549},{'x':561,'y':549},{'x':566,'y':549},{'x':496,'y':522},{'x':501,'y':522},{'x':506,'y':522},{'x':511,'y':522},{'x':516,'y':522},{'x':521,'y':522},{'x':526,'y':522},{'x':531,'y':522},{'x':536,'y':522},{'x':541,'y':522},{'x':546,'y':522},{'x':551,'y':522},{'x':556,'y':522},{'x':561,'y':522},{'x':566,'y':522},{'x':496,'y':522},{'x':496,'y':527},{'x':496,'y':532},{'x':496,'y':537},{'x':496,'y':542},{'x':496,'y':547},{'x':567,'y':522},{'x':567,'y':527},{'x':567,'y':532},{'x':567,'y':537},{'x':567,'y':542},{'x':567,'y':547}];
+
+window.d8SantaPoints=[{'x':594,'y':716},{'x':599,'y':716},{'x':604,'y':716},{'x':609,'y':716},{'x':614,'y':716},{'x':619,'y':716},{'x':624,'y':716},{'x':629,'y':716},{'x':634,'y':716},{'x':639,'y':716},{'x':644,'y':716},{'x':649,'y':716},{'x':654,'y':716},{'x':594,'y':673},{'x':599,'y':673},{'x':604,'y':673},{'x':609,'y':673},{'x':614,'y':673},{'x':619,'y':673},{'x':624,'y':673},{'x':629,'y':673},{'x':634,'y':673},{'x':639,'y':673},{'x':644,'y':673},{'x':649,'y':673},{'x':654,'y':673},{'x':594,'y':673},{'x':594,'y':678},{'x':594,'y':683},{'x':594,'y':688},{'x':594,'y':693},{'x':594,'y':698},{'x':594,'y':703},{'x':594,'y':708},{'x':594,'y':713},{'x':655,'y':673},{'x':655,'y':678},{'x':655,'y':683},{'x':655,'y':688},{'x':655,'y':693},{'x':655,'y':698},{'x':655,'y':703},{'x':655,'y':708},{'x':655,'y':713}];
+
+window.c8HunterPoints=[{'x':500,'y':714},{'x':505,'y':714},{'x':510,'y':714},{'x':515,'y':714},{'x':520,'y':714},{'x':525,'y':714},{'x':530,'y':714},{'x':535,'y':714},{'x':540,'y':714},{'x':545,'y':714},{'x':550,'y':714},{'x':555,'y':714},{'x':500,'y':674},{'x':505,'y':674},{'x':510,'y':674},{'x':515,'y':674},{'x':520,'y':674},{'x':525,'y':674},{'x':530,'y':674},{'x':535,'y':674},{'x':540,'y':674},{'x':545,'y':674},{'x':550,'y':674},{'x':555,'y':674},{'x':500,'y':674},{'x':500,'y':679},{'x':500,'y':684},{'x':500,'y':689},{'x':500,'y':694},{'x':500,'y':699},{'x':500,'y':704},{'x':500,'y':709},{'x':558,'y':674},{'x':558,'y':679},{'x':558,'y':684},{'x':558,'y':689},{'x':558,'y':694},{'x':558,'y':699},{'x':558,'y':704},{'x':558,'y':709}];
+
+window.c3VampirePoints=[{'x':480,'y':716},{'x':485,'y':716},{'x':490,'y':716},{'x':495,'y':716},{'x':500,'y':716},{'x':505,'y':716},{'x':510,'y':716},{'x':515,'y':716},{'x':520,'y':716},{'x':525,'y':716},{'x':530,'y':716},{'x':535,'y':716},{'x':540,'y':716},{'x':545,'y':716},{'x':550,'y':716},{'x':555,'y':716},{'x':480,'y':658},{'x':485,'y':658},{'x':490,'y':658},{'x':495,'y':658},{'x':500,'y':658},{'x':505,'y':658},{'x':510,'y':658},{'x':515,'y':658},{'x':520,'y':658},{'x':525,'y':658},{'x':530,'y':658},{'x':535,'y':658},{'x':540,'y':658},{'x':545,'y':658},{'x':550,'y':658},{'x':555,'y':658},{'x':480,'y':658},{'x':480,'y':663},{'x':480,'y':668},{'x':480,'y':673},{'x':480,'y':678},{'x':480,'y':683},{'x':480,'y':688},{'x':480,'y':693},{'x':480,'y':698},{'x':480,'y':703},{'x':480,'y':708},{'x':480,'y':713},{'x':557,'y':658},{'x':557,'y':663},{'x':557,'y':668},{'x':557,'y':673},{'x':557,'y':678},{'x':557,'y':683},{'x':557,'y':688},{'x':557,'y':693},{'x':557,'y':698},{'x':557,'y':703},{'x':557,'y':708},{'x':557,'y':713}];
+
+window.c3CoinPoints=[{'x':443,'y':291},{'x':448,'y':291},{'x':453,'y':291},{'x':458,'y':291},{'x':463,'y':291},{'x':468,'y':291},{'x':473,'y':291},{'x':478,'y':291},{'x':483,'y':291},{'x':488,'y':291},{'x':443,'y':262},{'x':448,'y':262},{'x':453,'y':262},{'x':458,'y':262},{'x':463,'y':262},{'x':468,'y':262},{'x':473,'y':262},{'x':478,'y':262},{'x':483,'y':262},{'x':488,'y':262},{'x':443,'y':262},{'x':443,'y':267},{'x':443,'y':272},{'x':443,'y':277},{'x':443,'y':282},{'x':443,'y':287},{'x':489,'y':262},{'x':489,'y':267},{'x':489,'y':272},{'x':489,'y':277},{'x':489,'y':282},{'x':489,'y':287}];
 
 window.draw_card = function(src,color) {
     var card = document.createElement("img");
@@ -1155,24 +1218,60 @@ var intId=setInterval(function(){
         hunter.style.visibility="hidden";
         game.appendChild(hunter)
 
+        /*global*/santa=document.createElement("img");
+        santa.id="santa";
+        santa.src="images/santa.png";
+        santa.style.position="absolute";
+        santa.style.zIndex="1001";
+        santa.style.width="35px";
+        santa.style.height="35px";
+        santa.style.left="608px";
+        santa.style.top="680px";
+        santa.style.visibility="hidden";
+        game.appendChild(santa)
+
+        /*global*/vampire=document.createElement("img");
+        vampire.id="vampire";
+        vampire.src="images/vampire.png";
+        vampire.style.position="absolute";
+        vampire.style.zIndex="1001";
+        vampire.style.width="35px";
+        vampire.style.height="35px";
+        vampire.style.left="508px";
+        vampire.style.top="680px";
+        vampire.style.visibility="hidden";
+        game.appendChild(vampire)
+
+        /*global*/coin=document.createElement("img");
+        coin.id="coin";
+        coin.src="images/icons/coin.png";
+        coin.style.position="absolute";
+        coin.style.zIndex="1000009";
+        coin.style.width="12px";
+        coin.style.height="12px";
+        coin.style.left="458px";
+        coin.style.top="266px";
+        coin.style.visibility="hidden";
+        game.appendChild(coin)
+
         /*global*/speechBub=document.createElement("img");
         speechBub.id="guide";
         speechBub.src="images/speech_bubble.png";
         speechBub.style.position="absolute";
-        speechBub.style.zIndex="1001";
+        speechBub.style.zIndex="1000009";//"1001";
         speechBub.style.left="529px";
         speechBub.style.top="205px";
         speechBub.style.visibility="hidden";
         game.appendChild(speechBub)
 
         /*global*/speechTxt=document.createElement("div");
-        speechTxt.innerHTML="We're running out of time! Christmas is on hold until the elf last seen wearing a ghostface mask in an air balloon returns all the presents. Control your car with left-right arrow keys to steer and up-down arrow keys to adjust speed and spacebar for the map. Good luck!";
+        speechTxt.innerHTML=window.SPEECH_D9;
         speechTxt.style.color="black";
         speechTxt.style.fontWeight="bold";
         speechTxt.style.fontSize="22px";
         speechTxt.style.disabled=true;
         speechTxt.style.position="absolute";
-        speechTxt.style.zIndex="1002";
+        speechTxt.style.zIndex="1000010";//"1002";
         speechTxt.style.left="660px";
         speechTxt.style.top="260px";
         speechTxt.style.width="400px";
