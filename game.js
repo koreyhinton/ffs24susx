@@ -934,9 +934,12 @@ window.setspeech = function(bub,txt,x,y) {
 }
 
 window.position_coin = function(c) {
-    c.style.left="1156px";
-    c.style.top="664px";
+    c.style.left="1144px";//"1156px";
+    c.style.top="658px";//"664px";
     c.style.visibility="visible";
+    c.style.width="26px";
+    c.style.height="26px";
+    c.style.zIndex="1000007"//1 less than item button
     //coin.style.zIndex="2000000";
 //                coin.style.width="100px";
 }
