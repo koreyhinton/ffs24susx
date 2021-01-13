@@ -7,11 +7,15 @@ window.mapVisibility='hidden';
 var idx="D9";
 var debug=false
 var dbg_cell=new URL(location.href).searchParams.get("c");
+var dbg_item=new URL(location.href).searchParams.get("item");
 console.log(dbg_cell)
 if (dbg_cell != null) {
     //debug=true;
     idx=dbg_cell
 }
+
+window.item=null;
+if (dbg_item!=null)window.item=dbg_item;
 
 
 var instructions="Welcome mouse detective! Are you ready for your first assignment? There is an elf hiding behind a mask that is causing all sorts of mayhem, stealing toys and stealing the holiday joy. Your assignment is to find which elf is hiding behind the mask. Use the left and right arrow controls to steer your vehicle. Starting in.......... Three.............................. Two.............................. One.............................."
@@ -70,7 +74,6 @@ var px=-1  //player x, each gameloop needs position data immediately
 var py=-1
 
 window.card_inventory=[]
-window.item=null
 window.SUSPECT_IDX=20;
 window.SUSPECT_CELL="A1";
 
@@ -430,6 +433,10 @@ window.setp=function(x,y,player) {
         prog.style.left=x+"px";
         prog.style.top=(y-50)+"px";
     }
+    if (item=='wolf'){
+        wolf.style.left=x+"px";
+        wolf.style.top=y+"px";
+    }
 }
 function shift_screen(from, to) {
    transitioning=true
@@ -441,11 +448,19 @@ function shift_screen(from, to) {
    } else { guideEl.style.visibility="hidden";  }
    if (to=="C8") hunter.style.visibility="visible";
    else hunter.style.visibility="hidden";
+   if (to=="C8" && item=="coin") { wolf.style.visibility="visible" }
+   else if (item != "wolf") wolf.style.visibility="hidden";
    if (to=="D8") santa.style.visibility="visible";
    else santa.style.visibility="hidden";
    if (to=="C3") {vampire.style.visibility="visible";coin.style.visibility="visible";}
    else {vampire.style.visibility="hidden";coin.style.visibility="hidden";}
    if (window.item=="coin") {coin.style.visibility="visible";window.position_coin(coin);}
+
+   //todo:remove and fix this:
+   window.SUSPECT_CELL="C9"
+   if (to==window.SUSPECT_CELL/*&& suspects==24*/) {
+       culprit.style.visibility="visible";
+   } else {culprit.style.visibility="hidden";}
    document.getElementById('edit').innerHTML='Edit';
    document.getElementById('debug').innerHTML='Debug';
    while (document.getElementsByClassName('edit').length>0){document.getElementsByClassName('edit')[0].remove()}
@@ -463,6 +478,14 @@ function shift_screen(from, to) {
    setTimeout(function() {
        lastX=-1;
        idx=to
+       //todo: uncomment
+       if (to==window.SUSPECT_CELL/*&& suspects==24*/) {
+            var culp_h=window.getComputedStyle(culprit).height.replace("px","");
+            var culp_w=window.getComputedStyle(culprit).width.replace("px","");
+            var pt=nearest_safe_point(300,300);
+            culprit.style.left=pt.x+"px";
+            culprit.style.top=(pt.y-culp_h)+"px";
+       }
        setp(map[idx].entrances[from].x, map[idx].entrances[from].y)
 
        /*undoing collected letters has to wait to avoid cards dropping even after leaving scene*/
@@ -675,6 +698,20 @@ function furthest_safe_point(x,y,omit) {
     return map[idx].safe[max_idx];
 }
 
+function nearest_safe_point(x,y, omit) {
+    var min_dist=99999
+    var min_idx=-1
+    for (var i=0;i<map[idx].safe.length;i++) {
+        var sx=map[idx].safe[i].x;
+        var sy=map[idx].safe[i].y;
+        var cmp=Math.abs(sx-x)+Math.abs(sy-y);
+        if (omit != null && omit.x==sx && omit.y==sy) continue;
+        if (cmp<min_dist) {min_dist=cmp;min_idx=i;}
+    }
+    return map[idx].safe[min_idx];
+}
+
+
 function goto_nearest_safe(x,y) {
     var min_dist=99999
     var min_idx=-1
@@ -829,6 +866,18 @@ function keydown(e) {
         if (suspects>0){
             a.innerHTML="You reach into your bag and all you see are evidence cards, you can't give those up.";
         } else {a.innerHTML="You reach into your empty bag.";}
+        var cs=window.getComputedStyle(player);//computed style
+        var x1=parseInt(cs.left.replace("px",""));
+        var y1=parseInt(cs.top.replace("px",""));
+        var x2=x1+parseInt(cs.width.replace("px",""));
+        var y2=y1+parseInt(cs.height.replace("px",""));
+        
+        if (window.item=="coin" && inside_rect(window.c8HunterPoints,{'x1':x1,'y1':y1,'x2':x2,'y2':y2})) {
+            coin.style.visibility="hidden";
+            window.item="wolf";
+            wolf.style.visibility="visible";
+            a.innerHTML="";
+        } else if (window.item=="coin") a.innerHTML="You look down at the coin, and remember that you need to trade with the hunter";
         a.style.left="1050px";
         a.style.top="525px";
         a.style.width="180px";
@@ -889,6 +938,10 @@ function keydown(e) {
     //     keydown_positions=[]
     // }
     // keydown_positions.push({'x':player.x,'y':player.y});
+
+    if (item=='wolf') {
+        wolf.src="images/wolf"+angle+".png";
+    }
 }
 window.complete_suspect_scene = function(this_card,other_card,green_card,black_card) {
     if (parseInt(window.getComputedStyle(other_card).top.replace("px",""))<0){
@@ -904,15 +957,15 @@ window.complete_suspect_scene = function(this_card,other_card,green_card,black_c
                 var i=0;
                 while (i<ltrs.length)ltrs[i++].classList.add("collected");
             }
-            if (suspects==23) {
-                /*var cell="A1"
-                for (var i=0;i<suspectsList.length;i++){
-                    if (map[suspectsList[i]].suspects.length>0) {
-                        cell=suspectsList[i];
-                    }
-                }*/
-                location.href="end.html?s="+window.SUSPECT_CELL;
-            }
+            // if (suspects==23) {
+            //     /*var cell="A1"
+            //     for (var i=0;i<suspectsList.length;i++){
+            //         if (map[suspectsList[i]].suspects.length>0) {
+            //             cell=suspectsList[i];
+            //         }
+            //     }*/
+            //     location.href="end.html?s="+window.SUSPECT_CELL;
+            // }
             map[idx].suspects.shift()
             suspects+=1
             document.getElementById("sus").innerHTML="Suspects: "+suspects
@@ -924,6 +977,8 @@ window.complete_suspect_scene = function(this_card,other_card,green_card,black_c
 window.SPEECH_D9="We're running out of time! Christmas is on hold until the elf last seen wearing a ghostface mask in an air balloon returns all the presents. Control your car with left-right arrow keys to steer and up-down arrow keys to adjust speed and spacebar for the map. Good luck!";
 window.SPEECH_D8="Thanks for your help! Press enter to view your card progress. Collect all 24 elf suspect cards and then go back to the one where the pattern does not match. And remember to bring the presents back to me.";
 window.SPEECH_C8="Hello friend. If it's not werewolves it's vampires, and there's been a lot of recent sightings. It's my duty to keep this place safe. By the way, I am really in need of some silver, if you find some I'll trade you for it.";
+window.SPEECH_C8_2="Press 0 to trade with me. Coin for mask. Its your one chance, if anything is more scary than a ghostface, it's a werewolf.";
+window.SPEECH_C8_3="Keep it, trust me you look better in it than I do.";
 window.SPEECH_C3="Iv you see a seelvur coin, pleased I wulld be if you keep it. You wull need it more t'an 'ome."
 
 window.setspeech = function(bub,txt,x,y) {
@@ -1080,7 +1135,8 @@ function gameloop() {
             }
             else if(idx=='C8'&&inside_rect(window.c8HunterPoints, rect)) {
                 window.setspeech(speechBub, speechTxt, 532, 360);
-                speechTxt.innerHTML=window.SPEECH_C8;
+                speechTxt.innerHTML=(window.item=="coin")?window.SPEECH_C8_2:window.SPEECH_C8;
+                if (window.item=="wolf") speechTxt.innerHTML=window.SPEECH_C8_3;
                 speechBub.style.visibility="visible";
                 speechTxt.style.visibility="visible";
             }
@@ -1151,7 +1207,27 @@ function gameloop() {
         el.style.top=(y)+"px";
         el.style.left=(x)+"px";
     }*/
+
+    //todo: uncomment
+    if (window.SUSPECT_CELL==idx /*&& suspects==24*/) {
+        var p=document.getElementById("player");
+        var culp_x=window.getComputedStyle(culprit).left.replace("px","");
+        var culp_y=window.getComputedStyle(culprit).top.replace("px","");
+        var culp_h=window.getComputedStyle(culprit).height.replace("px","");
+        var culp_w=window.getComputedStyle(culprit).width.replace("px","");
+        var playerx=window.getComputedStyle(p).left.replace("px","");
+        var playery=window.getComputedStyle(p).top.replace("px","");
+        if (window.test==null){
+        /*draw_rect(playerx,playery,playerx+w,playery+h);*/ window.test="test";}
+        if (inside_rect(rect_points(playerx,playery,playerx+w,playery+h),{'x1':culp_x,'y1':culp_y,'x2':culp_x+culp_w,'y2':culp_y+culp_h})){
+            var pt=nearest_safe_point(x+dx,y+dy);//, nearest_safe_point(x+dx,y+dy));
+            culprit.style.left=pt.x+"px";
+            culprit.style.top=(pt.y-culp_h)+"px";
+        }
+    }
+
 }
+window.test=null;//todo:remove
 
 window.d9GuidePoints=[{'x':496,'y':549},{'x':501,'y':549},{'x':506,'y':549},{'x':511,'y':549},{'x':516,'y':549},{'x':521,'y':549},{'x':526,'y':549},{'x':531,'y':549},{'x':536,'y':549},{'x':541,'y':549},{'x':546,'y':549},{'x':551,'y':549},{'x':556,'y':549},{'x':561,'y':549},{'x':566,'y':549},{'x':496,'y':522},{'x':501,'y':522},{'x':506,'y':522},{'x':511,'y':522},{'x':516,'y':522},{'x':521,'y':522},{'x':526,'y':522},{'x':531,'y':522},{'x':536,'y':522},{'x':541,'y':522},{'x':546,'y':522},{'x':551,'y':522},{'x':556,'y':522},{'x':561,'y':522},{'x':566,'y':522},{'x':496,'y':522},{'x':496,'y':527},{'x':496,'y':532},{'x':496,'y':537},{'x':496,'y':542},{'x':496,'y':547},{'x':567,'y':522},{'x':567,'y':527},{'x':567,'y':532},{'x':567,'y':537},{'x':567,'y':542},{'x':567,'y':547}];
 
@@ -1196,7 +1272,35 @@ var intId=setInterval(function(){
         speedEl.style.position="absolute";
         speedEl.style.zIndex="1001";
         game.appendChild(speedEl);
+
+
+        /*global*/wolf=document.createElement("img");
+        wolf.id="wolf";
+        wolf.src="images/wolf180.png";
+        wolf.style.position="absolute";
+        wolf.style.zIndex="1002";//hunter zIndex +1
+        //wolf.style.width="35px";
+        //wolf.style.height="35px";
+        wolf.style.left="500px";//same as hunter (with offset)
+        wolf.style.top="672px";//same as hunter (with offset)
+        wolf.style.visibility="hidden";
+        game.appendChild(wolf)
+
         setp(500,530,el);
+
+        /*global*/culprit=document.createElement("img");
+        culprit.id="culprit";
+        culprit.src="images/halloween-5609078__340.png";
+        culprit.style.position="absolute";
+        culprit.style.zIndex="1002";//hunter zIndex +1
+        //culprit.style.width="35px";
+        //culprit.style.height="35px";
+        culprit.style.left="500px";//same as hunter (with offset)
+        culprit.style.top="672px";//same as hunter (with offset)
+        culprit.style.width=(228/3)+"px";
+        culprit.style.height=(340/3)+"px";
+        culprit.style.visibility="hidden";
+        game.appendChild(culprit)
 
         /*global*/guideEl=document.createElement("img");
         guideEl.id="guide";
