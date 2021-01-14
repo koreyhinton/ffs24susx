@@ -261,7 +261,7 @@ function inside_rect(pts, rect) {
         if ( pt.x>rect.x1 && pt.x<rect.x2 &&
              pt.y>rect.y1 && pt.y<rect.y2) {
             if (debug)console.log("pt:"+pt.x+","+pt.y+" x1:"+rect.x1+" y1:"+rect.y1+" x2:"+rect.x2+" y2:"+rect.y2)
-            console.log(transitioning)
+            //console.log(transitioning)
             return true;
         }
     }
@@ -438,6 +438,13 @@ window.setp=function(x,y,player) {
         wolf.style.top=y+"px";
     }
 }
+
+function get_exit(arr, exit) {
+    for (var i=0;i<arr.length;i++) {
+        if (arr[i].name==exit)return arr[i];
+    }
+}
+
 function shift_screen(from, to) {
    transitioning=true
    var suss=document.getElementsByClassName("sus")
@@ -456,9 +463,7 @@ function shift_screen(from, to) {
    else {vampire.style.visibility="hidden";coin.style.visibility="hidden";}
    if (window.item=="coin") {coin.style.visibility="visible";window.position_coin(coin);}
 
-   //todo:remove and fix this:
-   window.SUSPECT_CELL="C9"
-   if (to==window.SUSPECT_CELL/*&& suspects==24*/) {
+   if (to==window.SUSPECT_CELL) {
        culprit.style.visibility="visible";
    } else {culprit.style.visibility="hidden";}
    document.getElementById('edit').innerHTML='Edit';
@@ -478,11 +483,11 @@ function shift_screen(from, to) {
    setTimeout(function() {
        lastX=-1;
        idx=to
-       //todo: uncomment
-       if (to==window.SUSPECT_CELL/*&& suspects==24*/) {
+       if (to==window.SUSPECT_CELL && suspects==24) {
             var culp_h=window.getComputedStyle(culprit).height.replace("px","");
             var culp_w=window.getComputedStyle(culprit).width.replace("px","");
-            var pt=nearest_safe_point(300,300);
+            var exit_pt=get_exit(map[to].exits,from).dots[0]
+            var pt=furthest_safe_point(exit_pt.x,exit_pt.y);//(300,300);
             culprit.style.left=pt.x+"px";
             culprit.style.top=(pt.y-culp_h)+"px";
        }
@@ -999,8 +1004,18 @@ window.position_coin = function(c) {
 //                coin.style.width="100px";
 }
 
+function finalScene(){
+    return window.item=="wolf" && culprit.style.visibility=="visible"&&suspects==24;
+}
+
+var gift_pts=[]
 var lastX=500;
 var lastY=530;
+var culp_dx=0;
+var culp_dy=0;
+var culp_ds=1;
+var mod_it=0;
+var slowrt_it=0;
 function gameloop() {
     if (transitioning)return;
     if (speedEl.src != "images/speed"+speedf+".png"){
@@ -1108,9 +1123,11 @@ function gameloop() {
         rect.y1=y+dy;
         rect.x2=rect.x1+w;
         rect.y2=rect.y1+h;
-        for (var i=0;i<map[idx].exits.length;i++) {
-            if (inside_rect(map[idx].exits[i].dots, rect)) {
-                shift_screen(idx, map[idx].exits[i].name)
+        if (!finalScene()){
+            for (var i=0;i<map[idx].exits.length;i++) {
+                if (inside_rect(map[idx].exits[i].dots, rect)) {
+                    shift_screen(idx, map[idx].exits[i].name)
+                }
             }
         }
         if (idx=='D9'||idx=='D8'||idx=='C8'||idx=='C3'){
@@ -1208,24 +1225,87 @@ function gameloop() {
         el.style.left=(x)+"px";
     }*/
 
-    //todo: uncomment
-    if (window.SUSPECT_CELL==idx /*&& suspects==24*/) {
+    if (slowrt_it%6==0&&window.SUSPECT_CELL==idx && suspects==24) {
         var p=document.getElementById("player");
-        var culp_x=window.getComputedStyle(culprit).left.replace("px","");
-        var culp_y=window.getComputedStyle(culprit).top.replace("px","");
-        var culp_h=window.getComputedStyle(culprit).height.replace("px","");
-        var culp_w=window.getComputedStyle(culprit).width.replace("px","");
-        var playerx=window.getComputedStyle(p).left.replace("px","");
-        var playery=window.getComputedStyle(p).top.replace("px","");
+        var culp_x=parseInt(window.getComputedStyle(culprit).left.replace("px",""));
+        var culp_y=parseInt(window.getComputedStyle(culprit).top.replace("px",""));
+        var culp_h=parseInt(window.getComputedStyle(culprit).height.replace("px",""));
+        var culp_w=parseInt(window.getComputedStyle(culprit).width.replace("px",""));
+        var playerx=parseInt(window.getComputedStyle(p).left.replace("px",""));
+        var playery=parseInt(window.getComputedStyle(p).top.replace("px",""));
         if (window.test==null){
-        /*draw_rect(playerx,playery,playerx+w,playery+h);*/ window.test="test";}
-        if (inside_rect(rect_points(playerx,playery,playerx+w,playery+h),{'x1':culp_x,'y1':culp_y,'x2':culp_x+culp_w,'y2':culp_y+culp_h})){
-            var pt=nearest_safe_point(x+dx,y+dy);//, nearest_safe_point(x+dx,y+dy));
+        /*draw_rect(playerx,playery,playerx+w,playery+h);*/ window.test="test";
+                    console.log(culp_x,culp_y,culp_w,culp_h);
+                    console.log(x+dx,y+dy,x+dx+w,y+dy+h);
+        }
+        if (inside_rect(rect_points(x+dx,y+dy,x+dx+w,y+dy+h),{'x1':culp_x,'y1':culp_y,'x2':culp_x+culp_w,'y2':culp_y+culp_h})){
+            var pt=nearest_safe_point(x+dx,y+dy,nearest_safe_point(x+dx,y+dy));//, nearest_safe_point(x+dx,y+dy));
             culprit.style.left=pt.x+"px";
             culprit.style.top=(pt.y-culp_h)+"px";
+            var gift=document.createElement("a");
+            gift.style.backgroundColor="gold";
+            gift.style.position="absolute";
+            gift.style.width="20px";
+            gift.style.height="20px";
+            gift.style.innerHTML="gift";
+            gift.style.zIndex="19999";
+            var gift_pt=nearest_safe_point(culp_x,culp_y+culp_h);
+            //var gift_pt=furthest_safe_point(culp_x,culp_y+culp_h);
+            gift.style.left=gift_pt.x+"px";
+            gift.style.top=gift_pt.y+"px";
+            gift_pts.push(gift_pt);
+            if (gift_pts.length==map[idx].safe.length) {
+                gift.style.width="40px";
+                gift.style.height="60px";
+                gift.style.left=(gift_pt.x-10)+"px";
+                gift.style.top=(gift_pt.y-40)+"px";
+                culprit.style.visibility="hidden"
+                window.SUSPECT_CELL="A1";
+                window.item="gift";
+            }
+            document.getElementById("game").appendChild(gift)
+            for (var i=0; i<map[idx].safe.length;i++) {
+                var safe_pt=map[idx].safe[i];
+                var found=false;
+                for (var j=0;j<gift_pts.length;j++) {
+                    if (gift_pts[j].x==safe_pt.x && gift_pts[j].y==safe_pt.y) { found=true; break; }
+                }
+                if (!found) {
+                    var pt=safe_pt;//nearest_safe_point(x+dx,y+dy,nearest_safe_point(x+dx,y+dy));//, nearest_safe_point(x+dx,y+dy));
+                    culprit.style.left=pt.x+"px";
+                    culprit.style.top=(pt.y-culp_h)+"px";
+                    break;
+                }
+            }
+        }
+        else {
+            //var pt=nearest_safe_point(culp_x,culp_y+culp_h, {'x':culp_x,'y':culp_y+culp_h});//, nearest_safe_point(x+dx,y+dy));
+            culprit.style.left=(culp_x+(culp_ds*culp_dx))+"px"//pt.x+"px";
+            culprit.style.top=(culp_y+(culp_ds*culp_dy))+"px";
+
+            if (mod_it%40==0) {
+                var pt=nearest_safe_point(x+dx,y+dy);//, nearest_safe_point(x+dx,y+dy));
+                culprit.style.left=pt.x+"px";
+                culprit.style.top=(pt.y-culp_h)+"px";
+                culp_dx=0;culp_dy=0;
+            }
+            else if ((mod_it%20)<9){
+                culp_dx=(culp_dx+1)%10;
+                //if (mod_it>8 && (mod_it%20)==8){culp_dy=-10}
+                if ((mod_it%20)==8)culp_ds=culp_ds*-1;
+                culp_dy=0;
+            } else {
+                culp_dy=(culp_dy+1)%10;
+                //if (mod_it>19&&(mod_it%20)==19){culp_dx=-10}
+                if ((mod_it%20)==8)culp_ds=culp_ds*-1;
+                else culp_dx=0;
+            }
+            if (mod_it==2000000)mod_it=20;
+            mod_it+=1;
         }
     }
-
+    slowrt_it+=1
+    if (slowrt_it==1000000)slowrt_it=0;
 }
 window.test=null;//todo:remove
 
@@ -1297,8 +1377,8 @@ var intId=setInterval(function(){
         //culprit.style.height="35px";
         culprit.style.left="500px";//same as hunter (with offset)
         culprit.style.top="672px";//same as hunter (with offset)
-        culprit.style.width=(228/3)+"px";
-        culprit.style.height=(340/3)+"px";
+        culprit.style.width=(228/2)+"px";
+        culprit.style.height=(340/2)+"px";
         culprit.style.visibility="hidden";
         game.appendChild(culprit)
 
