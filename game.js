@@ -463,7 +463,7 @@ function shift_screen(from, to) {
    else {vampire.style.visibility="hidden";coin.style.visibility="hidden";}
    if (window.item=="coin") {coin.style.visibility="visible";window.position_coin(coin);}
 
-   if (to==window.SUSPECT_CELL) {
+   if (to==window.SUSPECT_CELL && suspects==24) {
        culprit.style.visibility="visible";
    } else {culprit.style.visibility="hidden";}
    document.getElementById('edit').innerHTML='Edit';
