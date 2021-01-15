@@ -45,7 +45,10 @@ img.cardinv {
 a.collected {
     background-color:lightblue;
 }
-
+img.pres_collected {
+/*    left: 1141px !important;*/
+/*    top: 649px !important;*/
+}
 a.narrator, {
     color: #fff;
     text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;

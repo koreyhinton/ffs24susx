@@ -8,6 +8,7 @@ var idx="D9";
 var debug=false
 var dbg_cell=new URL(location.href).searchParams.get("c");
 var dbg_item=new URL(location.href).searchParams.get("item");
+var dbg_final=new URL(location.href).searchParams.get("final");
 console.log(dbg_cell)
 if (dbg_cell != null) {
     //debug=true;
@@ -15,8 +16,17 @@ if (dbg_cell != null) {
 }
 
 window.item=null;
-if (dbg_item!=null)window.item=dbg_item;
+var suspects=0;
+window.SUSPECT_CELL="A1";
 
+if (dbg_item!=null)window.item=dbg_item;
+if (dbg_final!=null){
+    window.SUSPECT_CELL=dbg_final;
+    for (var i=0;i<suspectsList.length;i++) {
+        map[suspectsList[i]].suspects.shift();
+        suspects++;
+    }
+}
 
 var instructions="Welcome mouse detective! Are you ready for your first assignment? There is an elf hiding behind a mask that is causing all sorts of mayhem, stealing toys and stealing the holiday joy. Your assignment is to find which elf is hiding behind the mask. Use the left and right arrow controls to steer your vehicle. Starting in.......... Three.............................. Two.............................. One.............................."
 
@@ -75,7 +85,6 @@ var py=-1
 
 window.card_inventory=[]
 window.SUSPECT_IDX=20;
-window.SUSPECT_CELL="A1";
 
 function draw_button(name,x,y) {
     var img=document.createElement("img");
@@ -147,7 +156,6 @@ function draw_map() {
     tbl.style.visibility=window.mapVisibility;
 }
 
-var suspects=0;
 window.dbg_clear = function() {
     var els=document.getElementsByClassName("dbg")
     while (els.length>0) {els[0].remove()}//.outerHTML="";els.pop()}
@@ -465,6 +473,10 @@ function shift_screen(from, to) {
 
    if (to==window.SUSPECT_CELL && suspects==24) {
        culprit.style.visibility="visible";
+       for (var i=12;i<" Collecting Presents".length;i++) {
+           document.getElementById("progltr"+i).innerHTML=(" Collecting Presents".substring(i,i+1));
+           console.log(" Collecting Presents".substring(i,i+1));
+       }
    } else {culprit.style.visibility="hidden";}
    document.getElementById('edit').innerHTML='Edit';
    document.getElementById('debug').innerHTML='Debug';
@@ -866,6 +878,7 @@ function keydown(e) {
     }
     else if (e.key =='0') {
         // 0
+        if (window.item=="potion")location.href="index.html";
         var a=document.createElement("a");
         a.style.position="absolute";
         if (suspects>0){
@@ -981,6 +994,7 @@ window.complete_suspect_scene = function(this_card,other_card,green_card,black_c
 
 window.SPEECH_D9="We're running out of time! Christmas is on hold until the elf last seen wearing a ghostface mask in an air balloon returns all the presents. Control your car with left-right arrow keys to steer and up-down arrow keys to adjust speed and spacebar for the map. Good luck!";
 window.SPEECH_D8="Thanks for your help! Press enter to view your card progress. Collect all 24 elf suspect cards and then go back to the one where the pattern does not match. And remember to bring the presents back to me.";
+window.SPEECH_D8_2="Well Done! Christmas is Saved. The game is over now. Press 0 to take your restart potion and start a new game.";
 window.SPEECH_C8="Hello friend. If it's not werewolves it's vampires, and there's been a lot of recent sightings. It's my duty to keep this place safe. By the way, I am really in need of some silver, if you find some I'll trade you for it.";
 window.SPEECH_C8_2="Press 0 to trade with me. Coin for mask. Its your one chance, if anything is more scary than a ghostface, it's a werewolf.";
 window.SPEECH_C8_3="Keep it, trust me you look better in it than I do.";
@@ -1005,10 +1019,12 @@ window.position_coin = function(c) {
 }
 
 function finalScene(){
-    return window.item=="wolf" && culprit.style.visibility=="visible"&&suspects==24;
+    return window.item=="wolf" && /*culprit.style.visibility=="visible"*/ window.SUSPECT_CELL==idx && suspects==24;
 }
 
-var gift_pts=[]
+var gift_pts=[];
+var gifts=[];
+var g_offset=0;
 var lastX=500;
 var lastY=530;
 var culp_dx=0;
@@ -1016,6 +1032,8 @@ var culp_dy=0;
 var culp_ds=1;
 var mod_it=0;
 var slowrt_it=0;
+var pres_i=0;
+var pres_throttle=0;
 function gameloop() {
     if (transitioning)return;
     if (speedEl.src != "images/speed"+speedf+".png"){
@@ -1051,8 +1069,35 @@ function gameloop() {
     var h=parseInt(window.getComputedStyle(img).height.replace("px",""));
 
     /*handle progress*/
+
+    var fs=finalScene();
+    if (fs && window.getComputedStyle(prog).visibility=="visible" && pres_i<" Collecting Presents ".length) {
+       document.getElementById("progltr"+pres_i).classList.add("collected");
+       if (pres_throttle%20==0) {pres_i+=1};
+       pres_throttle=(pres_throttle+1)%6000;
+    }
+    if (fs && gifts.length==map[idx].safe.length/*window.getComputedStyle(prog).visibility=="visible"*/) {
+        var test_pts=rect_points(x+dx,y+dy,x+dx+w,y+dy+h)
+        for (var i=0;i<gifts.length;i++) {
+            var g=gifts[i];
+            var pres_x=parseInt(window.getComputedStyle(g).left.replace("px",""));
+            var pres_y=parseInt(window.getComputedStyle(g).top.replace("px",""));
+            var pres_w=parseInt(window.getComputedStyle(g).width.replace("px",""));
+            var pres_h=parseInt(window.getComputedStyle(g).height.replace("px",""));
+            if (!g.classList.contains("pres_collected") && inside_rect(test_pts,{'x1':pres_x,'y1':pres_y,'x2':pres_x+pres_w,'y2':pres_y+pres_h})){
+                g.classList.add("pres_collected");
+                g.style.left=(1135+g_offset)+"px";
+                g.style.top=(630+g_offset)+"px";
+                g_offset+=10;
+                if (document.getElementsByClassName("pres_collected").length==map[idx].safe.length) {
+                    window.item="gift";
+                }
+            }
+        }
+    }
+
     var gLtrProg=document.getElementById("progltr10");
-    if (gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
+    if (!fs && gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         elfCard.src="images/elf"+idx+".png";
         elfCard.style.visibility="visible";
         var furth_pt1=furthest_safe_point(player.x,player.y);
@@ -1060,7 +1105,7 @@ function gameloop() {
         elfCard.style.top=furth_pt1.y+"px";
     }
     var susLtrProg=document.getElementById("progltr13");
-    if (map[idx].suspects.length>0 && susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
+    if (!fs && map[idx].suspects.length>0 && susLtrProg != null && susLtrProg.classList.contains("collected") && susCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         susCard.src="images/mask.png";
         susCard.style.visibility="visible";
         var omitX=parseInt(window.getComputedStyle(elfCard).left.replace("px",""));
@@ -1146,7 +1191,14 @@ function gameloop() {
             }
             else if(idx=='D8'&&inside_rect(window.d8SantaPoints, rect)) {
                 window.setspeech(speechBub, speechTxt, 619, 355);
-                speechTxt.innerHTML=window.SPEECH_D8;
+                if (window.item=="gift"||window.item=="potion"){
+                    speechTxt.innerHTML=window.SPEECH_D8_2;
+                    var presents=document.getElementsByClassName("pres_collected");
+                    while (presents.length>0)presents[0].remove();
+                    window.item="potion";
+                    potion.style.visibility="visible";
+                }
+                else { speechTxt.innerHTML=window.SPEECH_D8;}
                 speechBub.style.visibility="visible";
                 speechTxt.style.visibility="visible";
             }
@@ -1225,7 +1277,7 @@ function gameloop() {
         el.style.left=(x)+"px";
     }*/
 
-    if (slowrt_it%6==0&&window.SUSPECT_CELL==idx && suspects==24) {
+    if (slowrt_it%6==0&&window.SUSPECT_CELL==idx && suspects==24 && window.getComputedStyle(culprit).visibility=="visible") {
         var p=document.getElementById("player");
         var culp_x=parseInt(window.getComputedStyle(culprit).left.replace("px",""));
         var culp_y=parseInt(window.getComputedStyle(culprit).top.replace("px",""));
@@ -1242,8 +1294,9 @@ function gameloop() {
             var pt=nearest_safe_point(x+dx,y+dy,nearest_safe_point(x+dx,y+dy));//, nearest_safe_point(x+dx,y+dy));
             culprit.style.left=pt.x+"px";
             culprit.style.top=(pt.y-culp_h)+"px";
-            var gift=document.createElement("a");
-            gift.style.backgroundColor="gold";
+            var gift=document.createElement("img");
+            //gift.style.backgroundColor="gold";
+            gift.src="images/gift.png";
             gift.style.position="absolute";
             gift.style.width="20px";
             gift.style.height="20px";
@@ -1254,14 +1307,18 @@ function gameloop() {
             gift.style.left=gift_pt.x+"px";
             gift.style.top=gift_pt.y+"px";
             gift_pts.push(gift_pt);
+            gifts.push(gift);
             if (gift_pts.length==map[idx].safe.length) {
                 gift.style.width="40px";
                 gift.style.height="60px";
+                gift.src="images/gift_tall.png"
+                gift.style.zIndex="19998";
                 gift.style.left=(gift_pt.x-10)+"px";
                 gift.style.top=(gift_pt.y-40)+"px";
                 culprit.style.visibility="hidden"
-                window.SUSPECT_CELL="A1";
-                window.item="gift";
+                prog.style.visibility="visible"
+                //window.SUSPECT_CELL="A1";
+                //window.item="gift";
             }
             document.getElementById("game").appendChild(gift)
             for (var i=0; i<map[idx].safe.length;i++) {
@@ -1382,6 +1439,19 @@ var intId=setInterval(function(){
         culprit.style.visibility="hidden";
         game.appendChild(culprit)
 
+        /*global*/potion=document.createElement("img");
+        potion.id="potion";
+        potion.src="images/potion.png";
+        potion.style.position="absolute";
+        potion.style.zIndex="1000007";
+        potion.style.width="45px";
+        potion.style.height="45px";
+        potion.style.left="1138px";
+        potion.style.top="640px";
+        //potion.style.transparency=0.7;
+        potion.style.visibility="hidden";
+        game.appendChild(potion)
+
         /*global*/guideEl=document.createElement("img");
         guideEl.id="guide";
         guideEl.src="images/guide.png";
@@ -1442,7 +1512,7 @@ var intId=setInterval(function(){
         game.appendChild(coin)
 
         /*global*/speechBub=document.createElement("img");
-        speechBub.id="guide";
+        speechBub.id="speechBub";
         speechBub.src="images/speech_bubble.png";
         speechBub.style.position="absolute";
         speechBub.style.zIndex="1000009";//"1001";
