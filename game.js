@@ -860,9 +860,11 @@ function keydown(e) {
             help.style.zIndex="1000008";
             document.getElementById("game").append(help);
             document.getElementById("game").append(shroud);
+            window.dbg();
         } else {
             document.getElementById("help").remove();
             document.getElementById("shroud").remove();
+            window.dbg_clear();
         }
         e.view.event.preventDefault();
     }
@@ -998,6 +1000,7 @@ window.SPEECH_D8_2="Well Done! Christmas is Saved. The game is over now. Press 0
 window.SPEECH_C8="Hello friend. If it's not werewolves it's vampires, and there's been a lot of recent sightings. It's my duty to keep this place safe. By the way, I am really in need of some silver, if you find some I'll trade you for it.";
 window.SPEECH_C8_2="Press 0 to trade with me. Coin for mask. Its your one chance, if anything is more scary than a ghostface, it's a werewolf.";
 window.SPEECH_C8_3="Keep it, trust me you look better in it than I do.";
+window.SPEECH_C8_4="You can find Santa a little way to the east.";
 window.SPEECH_C3="Iv you see a seelvur coin, pleased I wulld be if you keep it. You wull need it more t'an 'ome."
 
 window.setspeech = function(bub,txt,x,y) {
@@ -1206,6 +1209,7 @@ function gameloop() {
                 window.setspeech(speechBub, speechTxt, 532, 360);
                 speechTxt.innerHTML=(window.item=="coin")?window.SPEECH_C8_2:window.SPEECH_C8;
                 if (window.item=="wolf") speechTxt.innerHTML=window.SPEECH_C8_3;
+                if (window.item=="gift"||window.item=="potion") speechTxt.innerHTML=window.SPEECH_C8_4;
                 speechBub.style.visibility="visible";
                 speechTxt.style.visibility="visible";
             }
@@ -1290,7 +1294,7 @@ function gameloop() {
                     console.log(culp_x,culp_y,culp_w,culp_h);
                     console.log(x+dx,y+dy,x+dx+w,y+dy+h);
         }
-        if (inside_rect(rect_points(x+dx,y+dy,x+dx+w,y+dy+h),{'x1':culp_x,'y1':culp_y,'x2':culp_x+culp_w,'y2':culp_y+culp_h})){
+        if (fs && inside_rect(rect_points(x+dx,y+dy,x+dx+w,y+dy+h),{'x1':culp_x,'y1':culp_y,'x2':culp_x+culp_w,'y2':culp_y+culp_h})){
             var pt=nearest_safe_point(x+dx,y+dy,nearest_safe_point(x+dx,y+dy));//, nearest_safe_point(x+dx,y+dy));
             culprit.style.left=pt.x+"px";
             culprit.style.top=(pt.y-culp_h)+"px";
