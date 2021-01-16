@@ -28,6 +28,29 @@ if (dbg_final!=null){
     }
 }
 
+
+window.profile_time=null;
+window.profile_a=0;
+window.profile_b=0;
+window.profile_a_cnt=1;
+window.profile_b_cnt=1;
+window.profile_start = function () {
+    window.profile_time=window.performance.now();//new Date().getTime();
+}
+window.profile_a_tick=function() {
+    var newdt=window.performance.now(); //new Date().getTime();
+    window.profile_a=(window.profile_a+ ((newdt - window.profile_time)))/window.profile_a_cnt;
+    window.profile_a_cnt+=1;
+    window.profile_time=newdt;
+}
+window.profile_b_tick=function() {
+    var newdt=window.performance.now();//new Date().getTime();
+    window.profile_b=(window.profile_b+ ((newdt - window.profile_time))  )/window.profile_b_cnt;
+    window.profile_b_cnt+=1;
+    window.profile_time=newdt;
+}
+window.prof=function(){console.log(window.profile_a+", "+window.profile_b);}
+
 var instructions="Welcome mouse detective! Are you ready for your first assignment? There is an elf hiding behind a mask that is causing all sorts of mayhem, stealing toys and stealing the holiday joy. Your assignment is to find which elf is hiding behind the mask. Use the left and right arrow controls to steer your vehicle. Starting in.......... Three.............................. Two.............................. One.............................."
 
 if (dbg_cell!=null) instructions=""
@@ -1037,12 +1060,24 @@ var mod_it=0;
 var slowrt_it=0;
 var pres_i=0;
 var pres_throttle=0;
+var plyr=null;
+var plyrsz={
+    '0':{'w':47,'h':39},
+    '45':{'w':43,'h':41},
+    '90':{'w':48,'h':43},
+    '135':{'w':45,'h':42},
+    '180':{'w':46,'h':38},
+    '225':{'w':44,'h':41},
+    '270':{'w':46,'h':35},
+    '315':{'w':46,'h':38}
+}
 function gameloop() {
     if (transitioning)return;
     if (speedEl.src != "images/speed"+speedf+".png"){
         speedEl.src="images/speed"+speedf+".png";
     }
-    var el=document.getElementById("player");
+    if (plyr==null) plyr=document.getElementById("player");//store in variable to improve game loop performace
+    var el=plyr;//use variable to improve game loop performace
     var dx=0; var dy=0;
     if (angle>90 && angle<270) {
         dx=-1;
@@ -1065,11 +1100,12 @@ function gameloop() {
     var x=px//parseInt(el.style.left.replace("px",""));
     var y=py//parseInt(el.style.top.replace("px",""));
     var road=map[idx];
-    var img=document.getElementById("player");
+    var img=plyr;//use variable to improve game loop performace
     img.style.zIndex="1000";
 
-    var w=parseInt(window.getComputedStyle(img).width.replace("px",""));
-    var h=parseInt(window.getComputedStyle(img).height.replace("px",""));
+    window.profile_start();
+    var w= plyrsz[angle+""].w;//use variable to improve performance
+    var h=plyrsz[angle+""].h;//use variable to improve performance
 
     /*handle progress*/
 
@@ -1098,7 +1134,6 @@ function gameloop() {
             }
         }
     }
-
     var gLtrProg=document.getElementById("progltr10");
     if (!fs && gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         elfCard.src="images/elf"+idx+".png";
@@ -1140,6 +1175,8 @@ function gameloop() {
         window.complete_suspect_scene(susCard,elfCard,elfCard,susCard)
         draw_map();
     }
+
+    window.profile_a_tick();
 
     //ugh workaround card showing up after leaving scene bug
     if (!suspectsList.includes(idx)){
@@ -1280,7 +1317,6 @@ function gameloop() {
         el.style.top=(y)+"px";
         el.style.left=(x)+"px";
     }*/
-
     if (slowrt_it%6==0&&window.SUSPECT_CELL==idx && suspects==24 && window.getComputedStyle(culprit).visibility=="visible") {
         var p=document.getElementById("player");
         var culp_x=parseInt(window.getComputedStyle(culprit).left.replace("px",""));
@@ -1367,6 +1403,7 @@ function gameloop() {
     }
     slowrt_it+=1
     if (slowrt_it==1000000)slowrt_it=0;
+    window.profile_b_tick();
 }
 window.test=null;//todo:remove
 
