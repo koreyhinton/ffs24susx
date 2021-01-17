@@ -112,7 +112,7 @@ var splashIntervalId=setInterval(function() {
 
 var angle=225;
 var px=-1  //player x, each gameloop needs position data immediately
-var py=-1
+var py=-1  //gets assigned in setp function
 
 window.card_inventory=[]
 window.SUSPECT_IDX=20;
@@ -789,6 +789,7 @@ function point_at_nearest_safe(x,y) {
     }
     var sx=map[idx].safe[min_idx].x;
     var sy=map[idx].safe[min_idx].y;
+/*
     var angles=[0,45,90,135,180,225,270,315]
     var ang=Math.atan2(sy-y,sx-x);//*180.0/Math.PI;
     ang *= 180 / Math.PI;
@@ -799,12 +800,16 @@ function point_at_nearest_safe(x,y) {
         if (Math.abs(angles[i]-ang)<nearest_angle) nearest_angle=angles[i];
     }
     if (nearest_angle!=0)console.log(nearest_angle)
+*/
     var dx = (sx>=x) ? 4:0;
     dx = (sx<x) ? -4:dx;
     var dy = (sy>=y) ? 4:0;
     dy = (sy<y) ? -4:dy;
     //var dx=0; var dy=-50;
-    setp(player.x+dx,player.y+dy,player);
+    var x=parseInt(window.getComputedStyle(plyr).left.replace("px",""))
+    var y=parseInt(window.getComputedStyle(plyr).top.replace("px",""))
+    //setp(player.x+dx,player.y+dy,player);
+    setp(x+dx,y+dy,player);
     //var el=document.getElementById("player");
     ///angle = nearest_angle//((nearest_angle) % 360)
 //    console.log(angle)
@@ -1114,8 +1119,8 @@ function gameloop() {
     }
 
     dx*=speedf;dy*=speedf;
-    var x=px//parseInt(el.style.left.replace("px",""));
-    var y=py//parseInt(el.style.top.replace("px",""));
+    var x=parseInt(window.getComputedStyle(plyr).left.replace("px",""))//px//parseInt(el.style.left.replace("px",""));
+    var y=parseInt(window.getComputedStyle(plyr).top.replace("px",""))//py//parseInt(el.style.top.replace("px",""));
     var road=map[idx];
     var img=plyr;//use variable to improve game loop performace
     img.style.zIndex="1000";
