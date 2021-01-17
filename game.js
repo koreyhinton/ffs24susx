@@ -487,13 +487,14 @@ function get_exit(arr, exit) {
 }
 
 function shift_screen(from, to) {
+   var SHIFT_WAIT=100;
    transitioning=true
    music_stop();
    var suss=document.getElementsByClassName("sus")
    for (var i=0;i<suss.length;i++){suss[i].remove()}
    dbg_clear();
    if (to=="D9") {
-        guideEl.style.visibility="visible";
+        setTimeout(function(){guideEl.style.visibility="visible";},SHIFT_WAIT+11);
    } else { guideEl.style.visibility="hidden";  }
    if (to=="C8") hunter.style.visibility="visible";
    else hunter.style.visibility="hidden";
@@ -582,7 +583,7 @@ function shift_screen(from, to) {
        if (to=='D12'||to=='C9'||to=='D9') {
 	   setTimeout(function(){music_play(to)},1500);
        }
-   },100);
+   },SHIFT_WAIT);
 }
 
 function create_dot(x,y,color,size) {
@@ -1214,7 +1215,7 @@ function gameloop() {
         {'x':x+w,'y':y+h},*/
         {'x':x+dx+(w/2.0),'y':y+dy+(h/2.0)}//center-point
     ]
-    var valid=(idx!='D9'&&idx!='E9'&&idx!='E8')?inside_simple_polygons_fallback(pts,map[idx].road):inside_simple_polygons(pts,map[idx].road);
+    var valid=(idx!='D9'&&idx!='E9'&&idx!='E8'&&idx!='B8')?inside_simple_polygons_fallback(pts,map[idx].road):inside_simple_polygons(pts,map[idx].road);
     if (valid) {
         setp(x+dx,y+dy,el)
         /*el.style.top=(y+dy)+"px";
