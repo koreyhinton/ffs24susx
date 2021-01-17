@@ -34,6 +34,7 @@ window.profile_a=0;
 window.profile_b=0;
 window.profile_a_cnt=1;
 window.profile_b_cnt=1;
+window.profile_last_sample=new Date().getTime();
 window.profile_start = function () {
     window.profile_time=window.performance.now();//new Date().getTime();
 }
@@ -43,11 +44,18 @@ window.profile_a_tick=function() {
     window.profile_a_cnt+=1;
     window.profile_time=newdt;
 }
+window.prof_int=null;
 window.profile_b_tick=function() {
     var newdt=window.performance.now();//new Date().getTime();
     window.profile_b=(window.profile_b+ ((newdt - window.profile_time))  )/window.profile_b_cnt;
     window.profile_b_cnt+=1;
     window.profile_time=newdt;
+    //if (window.profile_a>0.000000001 || window.profile_b>0.000000001) window.prof();
+    if (window.prof_int==null){
+        window.prof_int=setInterval(function(){if (window.profile_a>0.00005 || window.profile_b>0.00005) window.prof(); clearInterval(window.prof_int);window.prof_int=null;},1200);
+    }
+    //if (window.profile_a>0.005 || window.profile_b>0.005) window.prof();
+    window.profile_last_sample=newdt;
 }
 window.prof=function(){console.log(window.profile_a+", "+window.profile_b);}
 
@@ -1073,6 +1081,9 @@ var plyrsz={
 }
 function gameloop() {
     if (transitioning)return;
+    window.profile_start();
+    window.profile_a_tick();
+
     if (speedEl.src != "images/speed"+speedf+".png"){
         speedEl.src="images/speed"+speedf+".png";
     }
@@ -1103,10 +1114,10 @@ function gameloop() {
     var img=plyr;//use variable to improve game loop performace
     img.style.zIndex="1000";
 
-    window.profile_start();
     var w= plyrsz[angle+""].w;//use variable to improve performance
     var h=plyrsz[angle+""].h;//use variable to improve performance
 
+    window.profile_b_tick();
     /*handle progress*/
 
     var fs=finalScene();
@@ -1156,7 +1167,6 @@ function gameloop() {
          'y1':parseInt(window.getComputedStyle(elfCard).top.replace("px","")),
          'x2':parseInt(window.getComputedStyle(elfCard).left.replace("px",""))+parseInt(window.getComputedStyle(elfCard).width.replace("px","")),
          'y2':parseInt(window.getComputedStyle(elfCard).top.replace("px",""))+parseInt(window.getComputedStyle(elfCard).height.replace("px",""))};
-
     if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h),
         elf_rect)
     ){
@@ -1175,9 +1185,6 @@ function gameloop() {
         window.complete_suspect_scene(susCard,elfCard,elfCard,susCard)
         draw_map();
     }
-
-    window.profile_a_tick();
-
     //ugh workaround card showing up after leaving scene bug
     if (!suspectsList.includes(idx)){
         var ltrs=document.getElementsByClassName("collected");
@@ -1403,7 +1410,6 @@ function gameloop() {
     }
     slowrt_it+=1
     if (slowrt_it==1000000)slowrt_it=0;
-    window.profile_b_tick();
 }
 window.test=null;//todo:remove
 
