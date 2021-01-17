@@ -975,11 +975,14 @@ function keydown(e) {
         angle=0;
         e.view.event.preventDefault();
     }
+    var ps=window.getComputedStyle(document.getElementById("player"));
+    var player_x=parseInt(ps.left.replace("px",""));
+    var player_y=parseInt(ps.top.replace("px",""));
     var outofbounds=(
-        player.x<0 || player.x>1280 || player.y>720 || player.y<0
+        player_x<0 || player_x>1280 || player_y>720 || player_y<0
     );
     if(/*stuck || */outofbounds) {
-        goto_nearest_safe(player.x, player.y)
+        goto_nearest_safe(player_x, player_y)
     }
 
     // if (keydown_positions.length>2) {
@@ -1161,7 +1164,7 @@ function gameloop() {
     if (!fs && gLtrProg != null && gLtrProg.classList.contains("collected") && elfCard.style.visibility=="hidden"/* && !document.getElementById("progltr10").classList.contains('collected')*/) {//hack part 2
         elfCard.src="images/elf"+idx+".png";
         elfCard.style.visibility="visible";
-        var furth_pt1=furthest_safe_point(player.x,player.y);
+        var furth_pt1=furthest_safe_point(x,y);
         elfCard.style.left=furth_pt1.x+"px";
         elfCard.style.top=furth_pt1.y+"px";
     }
@@ -1171,7 +1174,7 @@ function gameloop() {
         susCard.style.visibility="visible";
         var omitX=parseInt(window.getComputedStyle(elfCard).left.replace("px",""));
         var omitY=parseInt(window.getComputedStyle(elfCard).top.replace("px",""));
-        var furth_pt=furthest_safe_point(player.x,player.y,{'x':omitX,'y':omitY});
+        var furth_pt=furthest_safe_point(x,y,{'x':omitX,'y':omitY});
         susCard.style.left=furth_pt.x+"px";
         susCard.style.top=furth_pt.y+"px";
     }
@@ -1179,7 +1182,7 @@ function gameloop() {
          'y1':parseInt(window.getComputedStyle(elfCard).top.replace("px","")),
          'x2':parseInt(window.getComputedStyle(elfCard).left.replace("px",""))+parseInt(window.getComputedStyle(elfCard).width.replace("px","")),
          'y2':parseInt(window.getComputedStyle(elfCard).top.replace("px",""))+parseInt(window.getComputedStyle(elfCard).height.replace("px",""))};
-    if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h),
+    if (inside_rect(rect_points(x,y,x+w,y+h),
         elf_rect)
     ){
         elfCard.style.left="0px";
@@ -1191,7 +1194,7 @@ function gameloop() {
          'y1':parseInt(window.getComputedStyle(susCard).top.replace("px",""))}
     sus_rect.x2=sus_rect.x1+parseInt(window.getComputedStyle(susCard).width.replace("px",""));
     sus_rect.y2=sus_rect.y1+parseInt(window.getComputedStyle(susCard).height.replace("px",""));
-    if (inside_rect(rect_points(player.x,player.y,player.x+w,player.y+h), sus_rect)){
+    if (inside_rect(rect_points(x,y,x+w,y+h), sus_rect)){
         susCard.style.left="0px";
         susCard.style.top="-600px";
         window.complete_suspect_scene(susCard,elfCard,elfCard,susCard)
