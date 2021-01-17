@@ -403,6 +403,8 @@ function sus_animation() {
     //game.appendChild(sus2)
     //sus2.style.visibility="hidden"
     var removedEarly=false
+    var cacheidx=idx;
+    setTimeout(function(){if(idx==cacheidx){music_play("sus")}},5000);
     var animIntId=setInterval(function() {
         if (transitioning || y<-sush) {
             if (transitioning) {
@@ -486,6 +488,7 @@ function get_exit(arr, exit) {
 
 function shift_screen(from, to) {
    transitioning=true
+   music_stop();
    var suss=document.getElementsByClassName("sus")
    for (var i=0;i<suss.length;i++){suss[i].remove()}
    dbg_clear();
@@ -576,6 +579,9 @@ function shift_screen(from, to) {
        draw_map();
        transitioning=false
        if (susFlag) { sus_animation() }
+       if (to=='D12'||to=='C9'||to=='D9') {
+	   setTimeout(function(){music_play(to)},1500);
+       }
    },100);
 }
 
@@ -1664,6 +1670,9 @@ var intId=setInterval(function(){
         recenter.id="recenter";
         game.appendChild(recenter);
 
+	if (idx=="D9")
+            music_play("D9");
+	
         setInterval(gameloop, 10);
         return;
     }
